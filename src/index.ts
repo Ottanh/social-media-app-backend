@@ -15,6 +15,7 @@ const typeDefs = gql`
   },
   type Post {
     id: ID!
+    username: String!
     user: String!
     date: String!
     content: String!
@@ -37,7 +38,7 @@ const resolvers = {
   },
   User: {
     posts: (user: { username: string }) => {
-      return postData.filter(post => post.user === user.username);
+      return postData.filter(post => post.username === user.username);
     }
   }
 };
