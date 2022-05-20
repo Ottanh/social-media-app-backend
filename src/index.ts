@@ -1,18 +1,43 @@
-import express from 'express';
-import usersRouter from './routes/users';
+import { ApolloServer, gql } from 'apollo-server';
+//import { v1 as uuid } from 'uuid';
+import userService from './services/userService';
 
-const app = express();
-app.use(express.json());
 
-const PORT = 3000;
+const typeDefs = gql`
+  type User {
+    username: String!
+    name: String!
+    joined: String!
+    description: String
+    posts: [Post]!
+  },
+  type Post {
+    id: ID!
+    user: User!
+    date: String!
+    content: String!
+    likes: Int!
+  },
+  type Query {
+    allUsers: [User]!
+  }
+`;
 
-app.get('/ping', (_req, res) => {
-  console.log('someone pinged here');
-  res.send('pong');
+const resolvers = {
+  Query: {
+    allUsers: () => {
+      return userService.getUsers();
+    }
+  }
+};
+
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
 });
 
-app.use('/api/users', usersRouter);
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+server.listen().then(({ url }) => {
+  console.log(`Server ready at ${url}`);
+}, (reject) => {
+  console.log(reject);
 });
