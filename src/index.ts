@@ -22,7 +22,17 @@ interface UserType {
   name: string;
   joined: string;
   description: string;
+  posts: PostType[]
 }
+
+interface PostType {
+  username: string;
+  user: string;
+  date: string;
+  content: string;
+  likes: number;
+}
+
 
 const userSchema = new Schema<UserType>({
   username: {
@@ -39,16 +49,12 @@ const userSchema = new Schema<UserType>({
   },
   description: {
     type: String
-  }
+  },
+  posts: [{
+    type: Schema.Types.ObjectId,
+    required: false
+  }],
 });
-
-interface PostType {
-  username: string;
-  user: string;
-  date: string;
-  content: string;
-  likes: number;
-}
 
 const postSchema = new Schema<PostType>({
   username: {
@@ -110,8 +116,8 @@ const resolvers = {
     }
   },
   User: {
-    posts: async (user: { username: string }) => {
-      return await Post.find({ username: user.username });
+    posts: async (user: { posts: string[] }) => {
+      return await Post.find({_id: {$in: user.posts}});
     }
   }
 };
