@@ -26,8 +26,7 @@ interface UserType {
 }
 
 interface PostType {
-  username: string;
-  user: string;
+  userId: string;
   date: string;
   content: string;
   likes: number;
@@ -57,12 +56,8 @@ const userSchema = new Schema<UserType>({
 });
 
 const postSchema = new Schema<PostType>({
-  username: {
-    type: String,
-    required: true
-  },
-  user: {
-    type: String,
+  userId: {
+    type: Schema.Types.ObjectId,
     required: true
   },
   date: {
@@ -94,8 +89,7 @@ const typeDefs = gql`
   },
   type Post {
     id: ID!
-    username: String!
-    user: String!
+    userId: ID!
     date: String!
     content: String!
     likes: Int!
