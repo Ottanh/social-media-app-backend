@@ -2,12 +2,11 @@ import { gql } from "apollo-server";
 
 
 export const userTypeDef = gql`
-  type User {
+  type Post {
     id: ID!
-    username: String!
-    name: String!
-    joined: String!
-    description: String
-    posts: [Post]!
+    userId: ID!
+    date: String!
+    content: String!
+    likes: Int!
   }
 `;

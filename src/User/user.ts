@@ -1,6 +1,6 @@
-import { gql } from "apollo-server";
+import { gql, UserInputError } from "apollo-server";
 import Post from "../Post/postSchema";
-import User from "./userSchema";
+import User, { UserType } from "./userSchema";
 
 
 export const postTypeDef = gql`
@@ -8,12 +8,20 @@ export const postTypeDef = gql`
     allUsers: [User]!
     findUser(username: String!): User
   }
-  type Post {
+  type User {
     id: ID!
-    userId: ID!
-    date: String!
-    content: String!
-    likes: Int!
+    username: String!
+    name: String!
+    joined: String!
+    description: String
+    posts: [Post]!
+  }
+  type Mutation {
+    createUser(
+      username: String!
+      name: String!
+      joined: String!
+    ): User
   }
 `;
 
@@ -29,6 +37,19 @@ export const userResolver = {
     },
     findUser: async (_root: undefined, args: { username: string; }) => {
       return await User.findOne({username: args.username});
+    }
+  },
+  Mutation: {
+    createUser: async (_root: undefined, args: UserType) => {
+      const user = new User({ ...args });
+      return user.save()
+        .catch(error => {
+          if(error instanceof Error) {
+            throw new UserInputError(error.message, {
+              invalidArgs: args,
+            });
+          }
+        });
     }
   }
 };

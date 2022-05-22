@@ -28,7 +28,8 @@ const userSchema = new Schema<UserType>({
   },
   posts: [{
     type: Schema.Types.ObjectId,
-    required: false
+    required: false,
+    default: []
   }],
 });
 
