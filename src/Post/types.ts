@@ -1,6 +1,10 @@
 export interface PostType {
-  userId: string;
+  user: {
+    id: string;
+    name: string;
+    username: string;
+  };
   date: string;
-  content: string;
+  content?: string;
   likes: number;
 }

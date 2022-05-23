@@ -1,5 +1,3 @@
-import { PostType } from "../Post/types";
-
 
 export interface UserType {
   username: string;
@@ -7,7 +5,6 @@ export interface UserType {
   name: string;
   joined: string;
   description: string;
-  posts: PostType[]
 }
 
 export interface UserToken {

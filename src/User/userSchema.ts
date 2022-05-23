@@ -21,12 +21,7 @@ const userSchema = new Schema<UserType>({
   },
   description: {
     type: String
-  },
-  posts: [{
-    type: Schema.Types.ObjectId,
-    required: false,
-    default: []
-  }],
+  }
 });
 
 const User = model<UserType>('User', userSchema);

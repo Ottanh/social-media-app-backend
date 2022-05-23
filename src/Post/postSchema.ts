@@ -3,9 +3,19 @@ import { PostType } from "./types";
 
 
 const postSchema = new Schema<PostType>({
-  userId: {
-    type: Schema.Types.ObjectId,
-    required: true
+  user: {
+    id: {
+      type: Schema.Types.ObjectId,
+      required: true
+    },
+    name: {
+      type: String,
+      required: true
+    },
+    username: {
+      type: String,
+      required: true
+    }
   },
   date: {
     type: String,

@@ -1,5 +1,4 @@
 import { gql, UserInputError } from "apollo-server";
-import Post from "../Post/postSchema";
 import User from "./userSchema";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -19,7 +18,6 @@ export const postTypeDef = gql`
     name: String!
     joined: String!
     description: String
-    posts: [Post]!
   }
   type Token {
     value: String!
@@ -39,11 +37,6 @@ export const postTypeDef = gql`
 `;
 
 export const userResolver = {
-  User: {
-    posts: async (user: { posts: string[] }) => {
-      return await Post.find({_id: {$in: user.posts}});
-    }
-  },
   Query: {
     allUsers: async () => {
       return await User.find({});

@@ -1,7 +1,7 @@
 import { ApolloServer, gql, UserInputError } from 'apollo-server';
 import 'dotenv/config';
 import mongoose from 'mongoose';
-import { userTypeDef } from './Post/post';
+import { postResolver, userTypeDef } from './Post/post';
 import { postTypeDef, userResolver } from './User/user';
 import { merge } from 'lodash';
 import User from './User/userSchema';
@@ -38,7 +38,7 @@ const resolvers = { };
 
 const server = new ApolloServer({
   typeDefs: [userTypeDef, postTypeDef, typeDefs],
-  resolvers: merge(resolvers, userResolver),
+  resolvers: merge(resolvers, userResolver, postResolver),
   context: async ({ req }): Promise<{ currentUser: UserType | null;}> => {    
     const auth = req ? req.headers.authorization : null;    
     if (auth && auth.toLowerCase().startsWith('bearer ')) {
