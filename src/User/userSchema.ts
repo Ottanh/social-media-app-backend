@@ -3,15 +3,24 @@ import { PostType } from "../Post/postSchema";
 
 export interface UserType {
   username: string;
+  passwordHash: string;
   name: string;
   joined: string;
   description: string;
   posts: PostType[]
 }
 
+export interface CreateUser extends Omit<UserType, 'passwordHash'> {
+  password: string;
+}
+
 
 const userSchema = new Schema<UserType>({
   username: {
+    type: String,
+    required: true
+  },
+  passwordHash: {
     type: String,
     required: true
   },
