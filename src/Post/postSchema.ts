@@ -1,11 +1,6 @@
 import { Schema, model } from "mongoose";
+import { PostType } from "./types";
 
-export interface PostType {
-  userId: string;
-  date: string;
-  content: string;
-  likes: number;
-}
 
 const postSchema = new Schema<PostType>({
   userId: {

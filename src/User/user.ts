@@ -1,9 +1,10 @@
 import { gql, UserInputError } from "apollo-server";
 import Post from "../Post/postSchema";
-import User, { CreateUser } from "./userSchema";
+import User from "./userSchema";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import 'dotenv/config';
+import { CreateUser } from "./types";
 
 
 export const postTypeDef = gql`
