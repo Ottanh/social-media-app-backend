@@ -1,5 +1,4 @@
 import { ApolloServer, gql, UserInputError } from 'apollo-server';
-import 'dotenv/config';
 import mongoose from 'mongoose';
 import { postResolver, userTypeDef } from './Post/post';
 import { postTypeDef, userResolver } from './User/user';
@@ -7,19 +6,11 @@ import { merge } from 'lodash';
 import User from './User/userSchema';
 import jwt, { JsonWebTokenError } from 'jsonwebtoken';
 import { UserToken, UserType } from './User/types';
+import config from './config';
 
 
-const MONGODB_URI = process.env.MONGODB_URI;
-if(!MONGODB_URI) {
-  throw new TypeError('MONGODB_URI is undefined');
-}
 
-const SECRET = process.env.SECRET;
-  if(!SECRET) {
-    throw new TypeError('MONGODB_URI is undefined');
-  }
-
-mongoose.connect(MONGODB_URI)
+mongoose.connect(config.MONGODB_URI)
   .then(() => {
     console.log('connected to MongoDB');
   })
@@ -43,7 +34,7 @@ const server = new ApolloServer({
     const auth = req ? req.headers.authorization : null;    
     if (auth && auth.toLowerCase().startsWith('bearer ')) {
       try {
-        const decodedToken = jwt.verify(auth.substring(7), SECRET) as UserToken; 
+        const decodedToken = jwt.verify(auth.substring(7), config.SECRET) as UserToken; 
         const currentUser = await User        
           .findById(decodedToken.id);      
         return { currentUser };    
