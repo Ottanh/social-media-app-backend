@@ -22,6 +22,10 @@ export const postTypeDef = gql`
   type Token {
     value: String!
   }
+  type TokenAndUser {
+    token: String!
+    user: User!
+  }
   type Mutation {
     createUser(
       username: String!
@@ -32,7 +36,7 @@ export const postTypeDef = gql`
     login(
     username: String!
     password: String!
-  ): Token
+  ): TokenAndUser
   }
 `;
 
@@ -70,7 +74,7 @@ export const userResolver = {
         : await bcrypt.compare(args.password, user.passwordHash);
 
       if (!(user && passwordCorrect)) {
-        throw new UserInputError("wrong credentials");
+        throw new UserInputError("Wrong credentials");
       }
 
       const userForToken = {
@@ -82,7 +86,7 @@ export const userResolver = {
       if(!SECRET) {
         throw new TypeError('MONGODB_URI is undefined');
       }
-      return { value: jwt.sign(userForToken, SECRET) };
+      return { token: jwt.sign(userForToken, SECRET), user };
     },
   }
 };
