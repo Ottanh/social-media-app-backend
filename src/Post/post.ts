@@ -32,7 +32,7 @@ export const userTypeDef = gql`
 export const postResolver = {
   Post: {
     date: (root: { _id: Types.ObjectId} ) => {
-      return root._id.getTimestamp();
+      return root._id.getTimestamp().toISOString();
     }
   },
   Query: {
