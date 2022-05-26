@@ -38,9 +38,9 @@ export const postResolver = {
   Query: {
     findPosts: async (_root: undefined, args: { username: string; }) => {
       if(!args.username){
-        return await Post.find({});
+        return await Post.find({}).sort({_id: -1});
       }
-      return await Post.find({ 'user.username': args.username });
+      return await Post.find({ 'user.username': args.username }).sort({_id: -1});
     }
   },
   Mutation: {
