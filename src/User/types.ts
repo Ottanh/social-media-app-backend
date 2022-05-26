@@ -1,9 +1,10 @@
 
+
 export interface UserType {
+  id?: string;
   username: string;
   passwordHash: string;
   name: string;
-  joined: string;
   description: string;
 }
 

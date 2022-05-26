@@ -17,10 +17,6 @@ const postSchema = new Schema<PostType>({
       required: true
     }
   },
-  date: {
-    type: String,
-    required: true
-  },
   content: {
     type: String,
     required: true

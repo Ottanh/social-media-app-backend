@@ -15,10 +15,6 @@ const userSchema = new Schema<UserType>({
     type: String,
     required: true
   },
-  joined: {
-    type: String,
-    required: true
-  },
   description: {
     type: String
   }

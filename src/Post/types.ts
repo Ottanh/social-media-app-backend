@@ -4,7 +4,12 @@ export interface PostType {
     name: string;
     username: string;
   };
-  date: string;
-  content?: string;
+  content: string;
+  likes: number;
+}
+
+
+export interface NewPost {
+  content: string;
   likes: number;
 }

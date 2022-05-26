@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import 'dotenv/config';
 import { CreateUser } from "./types";
+import { Types } from "mongoose";
 
 
 export const postTypeDef = gql`
@@ -16,7 +17,7 @@ export const postTypeDef = gql`
     id: ID!
     username: String!
     name: String!
-    joined: String!
+    date: String!
     description: String
   }
   type Token {
@@ -31,7 +32,6 @@ export const postTypeDef = gql`
       username: String!
       password: String!
       name: String!
-      joined: String!
     ): User
     login(
     username: String!
@@ -41,6 +41,11 @@ export const postTypeDef = gql`
 `;
 
 export const userResolver = {
+  User: {
+    date: (root: { _id: Types.ObjectId} ) => {
+      return root._id.getTimestamp();
+    }
+  },
   Query: {
     allUsers: async () => {
       return await User.find({});
