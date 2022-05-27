@@ -7,6 +7,7 @@ import User from './User/userSchema';
 import jwt, { JsonWebTokenError } from 'jsonwebtoken';
 import { UserToken, UserType } from './User/types';
 import config from './config';
+import Post from './Post/postSchema';
 
 
 
@@ -22,10 +23,23 @@ mongoose.connect(config.MONGODB_URI)
 const typeDefs = gql`
   type Query {
     _empty: String
+    search(searchword: String): SearchResult
+  }
+  type SearchResult {
+    users: [User]
+    posts: [Post]
   }
 `;
 
-const resolvers = { };
+const resolvers = {
+  Query: {
+    search: async (_root: undefined, args: { searchword: string; }) => {
+      const posts = await Post.find({ content: { $regex: `.*${args.searchword}.*`, $options: 'i' } });
+      const users = await User.find({ username: { $regex: `.*${args.searchword}.*`, $options: 'i' } });
+      return { users, posts };
+    }
+  }
+ };
 
 const server = new ApolloServer({
   typeDefs: [userTypeDef, postTypeDef, typeDefs],
