@@ -19,7 +19,7 @@ export const userTypeDef = gql`
     likes: Int!
   }
   extend type Query {
-    findPosts(username: String): [Post]! 
+    findPosts(username: String, id: String): [Post]! 
   }
   type Mutation {
     createPost(
@@ -36,11 +36,15 @@ export const postResolver = {
     }
   },
   Query: {
-    findPosts: async (_root: undefined, args: { username: string; }) => {
-      if(!args.username){
-        return await Post.find({}).sort({_id: -1});
+    findPosts: async (_root: undefined, args: { username: string; id: string }) => {
+      if(args.username){
+        return await Post.find({ 'user.username': args.username }).sort({_id: -1});
       }
-      return await Post.find({ 'user.username': args.username }).sort({_id: -1});
+      if(args.id){
+        return await Post.find({ _id: args.id });
+      }
+      return await Post.find({}).sort({_id: -1});
+      
     }
   },
   Mutation: {
