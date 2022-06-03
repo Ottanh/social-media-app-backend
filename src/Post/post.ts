@@ -26,6 +26,9 @@ export const userTypeDef = gql`
       content: String!
       likes: Int!
     ): Post
+    addLike(
+      id: ID!
+    ): Post
   }
 `;
 
@@ -72,6 +75,13 @@ export const postResolver = {
           }
         });
 
+    },
+    addLike: async (_root: undefined, args: { id: string}, context: { currentUser: UserType; }) => {
+      const currentUser = context.currentUser;
+      if (!currentUser) {      
+        throw new AuthenticationError("not authenticated");
+      }
+      return await Post.findByIdAndUpdate(args.id, { $inc: { likes: 1}}, { new: true });
     }
   }
 };
