@@ -17,7 +17,8 @@ const userSchema = new Schema<UserType>({
   },
   description: {
     type: String
-  }
+  },
+  likes: [Schema.Types.ObjectId]
 });
 
 const User = model<UserType>('User', userSchema);

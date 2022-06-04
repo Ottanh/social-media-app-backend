@@ -5,9 +5,10 @@ import { postTypeDef, userResolver } from './User/user';
 import { merge } from 'lodash';
 import User from './User/userSchema';
 import jwt, { JsonWebTokenError } from 'jsonwebtoken';
-import { UserToken, UserType } from './User/types';
+import { UserDoc, UserToken } from './User/types';
 import config from './config';
 import Post from './Post/postSchema';
+
 
 
 
@@ -44,7 +45,7 @@ const resolvers = {
 const server = new ApolloServer({
   typeDefs: [userTypeDef, postTypeDef, typeDefs],
   resolvers: merge(resolvers, userResolver, postResolver),
-  context: async ({ req }): Promise<{ currentUser: UserType | null;}> => {    
+  context: async ({ req }): Promise<{ currentUser: UserDoc | null;}> => {    
     const auth = req ? req.headers.authorization : null;    
     if (auth && auth.toLowerCase().startsWith('bearer ')) {
       try {

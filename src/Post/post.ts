@@ -1,8 +1,8 @@
 import { AuthenticationError, gql, UserInputError } from "apollo-server";
-import { UserType } from "../User/types";
+import { UserDoc, UserType } from "../User/types";
 import Post from "./postSchema";
 import { NewPost } from "./types";
-import {Types} from 'mongoose';
+import { Types } from 'mongoose';
 
 
 export const userTypeDef = gql`
@@ -74,14 +74,26 @@ export const postResolver = {
             });
           }
         });
-
     },
-    addLike: async (_root: undefined, args: { id: string}, context: { currentUser: UserType; }) => {
+    addLike: async (_root: undefined, args: { id: string}, context: { currentUser: UserDoc }) => {
       const currentUser = context.currentUser;
       if (!currentUser) {      
-        throw new AuthenticationError("not authenticated");
+        throw new AuthenticationError('not authenticated');
       }
-      return await Post.findByIdAndUpdate(args.id, { $inc: { likes: 1}}, { new: true });
+
+      const post = await Post.findById(args.id);
+
+      if(!post) {
+        throw new TypeError('Post found is undefined');
+      }
+      if(currentUser.likes.includes(post._id)) {
+        throw new UserInputError('User has already liked the post');
+      }
+
+      post.likes = (post.likes + 1);
+      currentUser.likes = currentUser.likes.concat(post._id);
+      await currentUser.save();
+      return await post.save();
     }
   }
 };

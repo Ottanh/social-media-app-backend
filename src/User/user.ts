@@ -19,6 +19,7 @@ export const postTypeDef = gql`
     name: String!
     date: String!
     description: String
+    likes: [ID]!
   }
   type Token {
     value: String!
