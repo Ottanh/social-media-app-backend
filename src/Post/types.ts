@@ -8,12 +8,11 @@ export interface PostType {
   };
   content: string;
   likes: number;
-  replies: Types.ObjectId[]; 
+  replyTo: Types.ObjectId;
 }
 
 
 export interface NewPost {
   content: string;
-  likes: number;
   replyTo: Types.ObjectId | null;
 }

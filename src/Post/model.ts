@@ -24,6 +24,10 @@ export const postSchema = new Schema<PostType>({
   likes: {
     type: Number,
     required: true
+  },
+  replyTo: {
+    type: Schema.Types.ObjectId,
+    required: false
   }
 });
 

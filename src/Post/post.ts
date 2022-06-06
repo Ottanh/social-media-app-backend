@@ -17,7 +17,6 @@ export const userTypeDef = gql`
     date: String!
     content: String!
     likes: Int!
-    replies: [ID]!
     replyTo: ID
   }
   extend type Query {
@@ -27,7 +26,7 @@ export const userTypeDef = gql`
   type Mutation {
     createPost(
       content: String!
-      likes: Int!
+      replyTo: String
     ): Post
     addLike(
       id: ID!
@@ -54,7 +53,7 @@ export const postResolver = {
     },
     getReplies: async (_root: undefined, args: { id: string }) => {
       const post = await Post.findById(args.id);
-      return await Reply.find({ _id: { $in: post?.replies } });
+      return await Reply.find({ replyTo: post?._id });
     }
   },
   Mutation: {
@@ -65,16 +64,32 @@ export const postResolver = {
         throw new AuthenticationError("not authenticated");
       }
 
-      const post = new Post({
-         ...args, 
-         replies: [],
-         user: { 
-           id: currentUser.id,
-           name: currentUser.name, 
-           username: currentUser.username
-          } 
-        });
-      return await post.save()
+      let newPost;
+      if(args.replyTo){
+        newPost = new Reply({
+          ...args, 
+          replies: [],
+          likes: 0,
+          user: { 
+            id: currentUser.id,
+            name: currentUser.name, 
+            username: currentUser.username
+           } 
+         });
+      } else {
+        newPost = new Post({
+          ...args, 
+          replies: [],
+          likes: 0,
+          user: { 
+            id: currentUser.id,
+            name: currentUser.name, 
+            username: currentUser.username
+           } 
+         });
+      }
+
+      return await newPost.save()
         .catch(error => {
           if(error instanceof UserInputError) {
             throw new UserInputError(error.message, {
