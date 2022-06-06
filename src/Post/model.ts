@@ -2,7 +2,7 @@ import { Schema, model } from "mongoose";
 import { PostType } from "./types";
 
 
-const postSchema = new Schema<PostType>({
+export const postSchema = new Schema<PostType>({
   user: {
     id: {
       type: Schema.Types.ObjectId,
@@ -27,5 +27,5 @@ const postSchema = new Schema<PostType>({
   }
 });
 
-const Post = model<PostType>('Post', postSchema);
-export default Post;
+export const Post = model<PostType>('Post', postSchema);
+export const Reply = model<PostType>('Reply', postSchema);

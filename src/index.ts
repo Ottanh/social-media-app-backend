@@ -3,11 +3,11 @@ import mongoose from 'mongoose';
 import { postResolver, userTypeDef } from './Post/post';
 import { postTypeDef, userResolver } from './User/user';
 import { merge } from 'lodash';
-import User from './User/userSchema';
+import User from './User/model';
 import jwt, { JsonWebTokenError } from 'jsonwebtoken';
 import { UserDoc, UserToken } from './User/types';
 import config from './config';
-import Post from './Post/postSchema';
+import { Post } from './Post/model';
 
 
 

@@ -1,5 +1,5 @@
 import { gql, UserInputError } from "apollo-server";
-import User from "./userSchema";
+import User from "./model";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import 'dotenv/config';

@@ -1,6 +1,6 @@
 import { AuthenticationError, gql, UserInputError } from "apollo-server";
 import { UserDoc, UserType } from "../User/types";
-import Post from "./postSchema";
+import {Post, Reply} from "./model";
 import { NewPost } from "./types";
 import { Types } from 'mongoose';
 
@@ -17,9 +17,12 @@ export const userTypeDef = gql`
     date: String!
     content: String!
     likes: Int!
+    replies: [ID]!
+    replyTo: ID
   }
   extend type Query {
     findPosts(username: String, id: String): [Post]! 
+    getReplies(id: String!): [Post]!
   }
   type Mutation {
     createPost(
@@ -48,6 +51,10 @@ export const postResolver = {
       }
       return await Post.find({}).sort({_id: -1});
       
+    },
+    getReplies: async (_root: undefined, args: { id: string }) => {
+      const post = await Post.findById(args.id);
+      return await Reply.find({ _id: { $in: post?.replies } });
     }
   },
   Mutation: {
@@ -60,6 +67,7 @@ export const postResolver = {
 
       const post = new Post({
          ...args, 
+         replies: [],
          user: { 
            id: currentUser.id,
            name: currentUser.name, 
