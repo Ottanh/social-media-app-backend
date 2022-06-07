@@ -20,8 +20,7 @@ export const userTypeDef = gql`
     replyTo: ID
   }
   extend type Query {
-    findPosts(username: String, id: String): [Post]! 
-    getReplies(id: String!): [Post]!
+    findPosts(username: String, id: String, replyTo: String): [Post]! 
   }
   type Mutation {
     createPost(
@@ -41,20 +40,20 @@ export const postResolver = {
     }
   },
   Query: {
-    findPosts: async (_root: undefined, args: { username: string; id: string }) => {
+    findPosts: async (_root: undefined, args: { username: string; id: string; replyTo: string; }) => {
       if(args.username){
         return await Post.find({ 'user.username': args.username }).sort({_id: -1});
       }
       if(args.id){
         return await Post.find({ _id: args.id });
       }
+      if(args.replyTo){
+        const post = await Post.findById(args.id);
+        return await Reply.find({ replyTo: post?._id });
+      }
       return await Post.find({}).sort({_id: -1});
       
     },
-    getReplies: async (_root: undefined, args: { id: string }) => {
-      const post = await Post.findById(args.id);
-      return await Reply.find({ replyTo: post?._id });
-    }
   },
   Mutation: {
     createPost: async (_root: undefined, args: NewPost, context: { currentUser: UserType; }) => {
