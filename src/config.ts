@@ -7,7 +7,7 @@ if(!MONGODB_URI) {
 
 const SECRET = process.env.SECRET;
 if(!SECRET) {
-  throw new TypeError('MONGODB_URI is undefined');
+  throw new TypeError('SECRET is undefined');
 }
 
 export default { MONGODB_URI, SECRET };

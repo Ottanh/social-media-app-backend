@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import 'dotenv/config';
 import { CreateUser } from "./types";
 import { Types } from "mongoose";
+import config from "../config";
 
 
 export const postTypeDef = gql`
@@ -33,7 +34,7 @@ export const postTypeDef = gql`
       username: String!
       password: String!
       name: String!
-    ): User
+    ): TokenAndUser
     login(
     username: String!
     password: String!
@@ -64,7 +65,13 @@ export const userResolver = {
       const passwordHash = await bcrypt.hash(args.password, saltRounds);
 
       const user = new User({ ...args, passwordHash });
-      return user.save()
+
+      const userForToken = {
+        username: user.username,
+        id: user._id,
+      };
+
+      const savedUser = await user.save()
         .catch(error => {
           if(error instanceof Error) {
             throw new UserInputError(error.message, {
@@ -72,6 +79,8 @@ export const userResolver = {
             });
           }
         });
+
+        return { token: jwt.sign(userForToken, config.SECRET), user: savedUser };
     },
     login: async (_root: undefined, args: { username: string; password: string; }) => {
       const user = await User.findOne({ username: args.username });
@@ -88,11 +97,7 @@ export const userResolver = {
         id: user._id,
       };
 
-      const SECRET = process.env.SECRET;
-      if(!SECRET) {
-        throw new TypeError('MONGODB_URI is undefined');
-      }
-      return { token: jwt.sign(userForToken, SECRET), user };
+      return { token: jwt.sign(userForToken, config.SECRET), user };
     },
   }
 };
