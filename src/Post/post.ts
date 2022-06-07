@@ -52,7 +52,7 @@ export const postResolver = {
         return [post];
       }
       if(args.replyTo){
-        return await Reply.find({replyTo: args.replyTo});
+        return await Reply.find({replyTo: args.replyTo}).sort({_id: -1});
       }
       return await Post.find({}).sort({_id: -1});
       
