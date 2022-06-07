@@ -48,8 +48,7 @@ export const postResolver = {
         return await Post.find({ _id: args.id });
       }
       if(args.replyTo){
-        const post = await Post.findById(args.id);
-        return await Reply.find({ replyTo: post?._id });
+        return await Reply.find({replyTo: args.replyTo});
       }
       return await Post.find({}).sort({_id: -1});
       
