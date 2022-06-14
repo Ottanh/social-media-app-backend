@@ -1,6 +1,6 @@
 import { AuthenticationError, gql, UserInputError } from "apollo-server";
 import { UserDoc, UserType } from "../User/types";
-import {Post, Reply} from "./model";
+import { Post, Reply } from "./model";
 import { NewPost } from "./types";
 import { Types } from 'mongoose';
 
@@ -18,6 +18,7 @@ export const userTypeDef = gql`
     content: String!
     likes: Int!
     replyTo: ID
+    replies: [ID]!
   }
   extend type Query {
     findPosts(username: String, id: String, replyTo: String): [Post]! 
@@ -25,7 +26,10 @@ export const userTypeDef = gql`
   type Mutation {
     createPost(
       content: String!
-      replyTo: String
+    ): Post
+    createReply (
+      content: String!
+      replyTo: String!
     ): Post
     addLike(
       id: ID!
@@ -66,30 +70,39 @@ export const postResolver = {
         throw new AuthenticationError("not authenticated");
       }
 
-      let newPost;
-      if(args.replyTo){
-        newPost = new Reply({
-          ...args, 
-          replies: [],
-          likes: 0,
-          user: { 
-            id: currentUser.id,
-            name: currentUser.name, 
-            username: currentUser.username
-           } 
-         });
-      } else {
-        newPost = new Post({
-          ...args, 
-          replies: [],
-          likes: 0,
-          user: { 
-            id: currentUser.id,
-            name: currentUser.name, 
-            username: currentUser.username
-           } 
-         });
+      const newPost = new Post({
+        ...args, 
+        user: { 
+          id: currentUser.id,
+          name: currentUser.name, 
+          username: currentUser.username
+         } 
+       });
+
+      return await newPost.save()
+        .catch(error => {
+          if(error instanceof UserInputError) {
+            throw new UserInputError(error.message, {
+              invalidArgs: args
+            });
+          }
+        });
+    },
+    createReply: async (_root: undefined, args: NewPost, context: { currentUser: UserType; }) => {
+      const currentUser = context.currentUser;
+
+      if (!currentUser) {      
+        throw new AuthenticationError("not authenticated");
       }
+
+      const newPost = new Reply({
+          ...args, 
+          user: { 
+            id: currentUser.id,
+            name: currentUser.name, 
+            username: currentUser.username
+           } 
+         });
 
       return await newPost.save()
         .catch(error => {

@@ -9,6 +9,7 @@ export interface PostType {
   content: string;
   likes: number;
   replyTo: Types.ObjectId;
+  replies: Types.ObjectId[];
 }
 
 

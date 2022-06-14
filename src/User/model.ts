@@ -2,6 +2,7 @@ import { Schema, model } from "mongoose";
 import { UserType } from "./types";
 
 
+
 const userSchema = new Schema<UserType>({
   username: {
     type: String,
@@ -15,10 +16,8 @@ const userSchema = new Schema<UserType>({
     type: String,
     required: true
   },
-  description: {
-    type: String
-  },
-  likes: [Schema.Types.ObjectId]
+  description: String,
+  likes: [Schema.Types.ObjectId],
 });
 
 const User = model<UserType>('User', userSchema);

@@ -1,11 +1,10 @@
 import { Types, Document } from "mongoose";
 
-
 export interface UserType {
   id: string;
+  name: string;
   username: string;
   passwordHash: string;
-  name: string;
   description: string;
   likes: Types.ObjectId[];
 }

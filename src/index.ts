@@ -50,8 +50,7 @@ const server = new ApolloServer({
     if (auth && auth.toLowerCase().startsWith('bearer ')) {
       try {
         const decodedToken = jwt.verify(auth.substring(7), config.SECRET) as UserToken; 
-        const currentUser = await User        
-          .findById(decodedToken.id);      
+        const currentUser = await User.findById(decodedToken.id);      
         return { currentUser };    
       } catch (error){
         if(error instanceof JsonWebTokenError){
