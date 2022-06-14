@@ -15,5 +15,9 @@ export interface PostType {
 
 export interface NewPost {
   content: string;
-  replyTo: Types.ObjectId | null;
+}
+
+export interface NewReply {
+  content: string;
+  replyTo: Types.ObjectId;
 }

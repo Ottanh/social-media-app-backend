@@ -1,7 +1,7 @@
 import { AuthenticationError, gql, UserInputError } from "apollo-server";
 import { UserDoc, UserType } from "../User/types";
 import { Post, Reply } from "./model";
-import { NewPost } from "./types";
+import { NewPost, NewReply } from "./types";
 import { Types } from 'mongoose';
 
 
@@ -21,7 +21,8 @@ export const userTypeDef = gql`
     replies: [ID]!
   }
   extend type Query {
-    findPosts(username: String, id: String, replyTo: String): [Post]! 
+    findPosts(username: String, id: String, replyTo: String): [Post]!
+    countPostReplies(id: String): Int!
   }
   type Mutation {
     createPost(
@@ -61,6 +62,23 @@ export const postResolver = {
       return await Post.find({}).sort({_id: -1});
       
     },
+    countPostReplies: async (_root: undefined, args: { id: string}) => {
+      const [post, reply] = await Promise.allSettled([
+        Post.findById(args.id), 
+        Reply.findById(args.id)
+      ]);
+      if(post.status === 'fulfilled' && reply.status === 'fulfilled') {
+        if(post.value && !reply.value) {
+          return post.value?.replies.length;
+        }
+        if(reply.value && !post.value) {
+          return reply.value?.replies.length;
+        }
+      } else {
+        throw new Error('Error finding post');
+      }
+      return -1;
+    }
   },
   Mutation: {
     createPost: async (_root: undefined, args: NewPost, context: { currentUser: UserType; }) => {
@@ -88,14 +106,14 @@ export const postResolver = {
           }
         });
     },
-    createReply: async (_root: undefined, args: NewPost, context: { currentUser: UserType; }) => {
+    createReply: async (_root: undefined, args: NewReply, context: { currentUser: UserType; }) => {
       const currentUser = context.currentUser;
 
       if (!currentUser) {      
         throw new AuthenticationError("not authenticated");
       }
 
-      const newPost = new Reply({
+      const newReply = new Reply({
           ...args, 
           user: { 
             id: currentUser.id,
@@ -104,7 +122,18 @@ export const postResolver = {
            } 
          });
 
-      return await newPost.save()
+      const [originalPost, originalReply] = await Promise.allSettled([
+        Post.findByIdAndUpdate(args.replyTo, { $push: { replies: newReply._id}}), 
+        Reply.findByIdAndUpdate(args.replyTo, { $push: { replies: newReply._id}})
+      ]);
+
+      if(!originalPost && !originalReply) {
+        throw new UserInputError('Could not find original post',{
+          invalidArgs: args.replyTo
+        });
+      }
+
+      return await newReply.save()
         .catch(error => {
           if(error instanceof UserInputError) {
             throw new UserInputError(error.message, {
