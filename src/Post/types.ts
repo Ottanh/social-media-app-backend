@@ -2,7 +2,7 @@ import { Types } from "mongoose";
 
 export interface PostType {
   user: {
-    id: string;
+    _id: string;
     name: string;
     username: string;
   };

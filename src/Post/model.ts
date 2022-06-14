@@ -1,11 +1,11 @@
-import { Schema, model, Types } from "mongoose";
+import { Schema, model } from "mongoose";
 import { PostType } from "./types";
 
 
 export const postSchema = new Schema<PostType>({
   user: {
-    id: {
-      type: Types.ObjectId,
+    _id: {
+      type: Schema.Types.ObjectId,
       required: true
     },
     name: {

@@ -90,11 +90,7 @@ export const postResolver = {
 
       const newPost = new Post({
         ...args, 
-        user: { 
-          id: currentUser.id,
-          name: currentUser.name, 
-          username: currentUser.username
-         } 
+        user: { ...currentUser } 
        });
 
       return await newPost.save()
@@ -114,9 +110,7 @@ export const postResolver = {
 
       const newReply = new Reply({
           ...args, 
-          user: { 
-            ...currentUser
-           } 
+          user: { ...currentUser } 
          });
 
       const [originalPost, originalReply] = await Promise.allSettled([
@@ -130,7 +124,7 @@ export const postResolver = {
         });
       }
 
-      return await newReply.save()
+      const saved = await newReply.save()
         .catch(error => {
           if(error instanceof UserInputError) {
             throw new UserInputError(error.message, {
@@ -138,6 +132,9 @@ export const postResolver = {
             });
           }
         });
+
+      console.log(saved);
+      return saved;
     },
     addLike: async (_root: undefined, args: { id: string}, context: { currentUser: CurrentUser }) => {
       const currentUser = context.currentUser;
