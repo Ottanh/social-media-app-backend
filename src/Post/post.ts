@@ -1,8 +1,9 @@
 import { AuthenticationError, gql, UserInputError } from "apollo-server";
-import { UserDoc, UserType } from "../User/types";
+import { CurrentUser, UserType } from "../User/types";
 import { Post, Reply } from "./model";
 import { NewPost, NewReply } from "./types";
 import { Types } from 'mongoose';
+import User from "../User/model";
 
 
 export const userTypeDef = gql`
@@ -22,7 +23,7 @@ export const userTypeDef = gql`
   }
   extend type Query {
     findPosts(username: String, id: String, replyTo: String): [Post]!
-    countPostReplies(id: String): Int!
+    countPostReplies(id: String!): Int!
   }
   type Mutation {
     createPost(
@@ -108,7 +109,6 @@ export const postResolver = {
     },
     createReply: async (_root: undefined, args: NewReply, context: { currentUser: UserType; }) => {
       const currentUser = context.currentUser;
-
       if (!currentUser) {      
         throw new AuthenticationError("not authenticated");
       }
@@ -142,25 +142,20 @@ export const postResolver = {
           }
         });
     },
-    addLike: async (_root: undefined, args: { id: string}, context: { currentUser: UserDoc }) => {
+    addLike: async (_root: undefined, args: { id: string}, context: { currentUser: CurrentUser }) => {
       const currentUser = context.currentUser;
       if (!currentUser) {      
         throw new AuthenticationError('not authenticated');
       }
 
-      const post = await Post.findById(args.id);
-
+      const post = await Post.findByIdAndUpdate(args.id, { $inc: { likes: 1}});
       if(!post) {
-        throw new TypeError('Post found is undefined');
-      }
-      if(currentUser.likes.includes(post._id)) {
-        throw new UserInputError('User has already liked the post');
+        throw new TypeError('Post not found');
       }
 
-      post.likes = (post.likes + 1);
-      currentUser.likes = currentUser.likes.concat(post._id);
-      await currentUser.save();
-      return await post.save();
+      await User.findByIdAndUpdate(currentUser._id, { $addToSet: { likes: post._id }});
+
+      return post;
     }
   }
 };

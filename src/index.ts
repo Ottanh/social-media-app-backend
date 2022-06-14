@@ -5,11 +5,9 @@ import { postTypeDef, userResolver } from './User/user';
 import { merge } from 'lodash';
 import User from './User/model';
 import jwt, { JsonWebTokenError } from 'jsonwebtoken';
-import { UserDoc, UserToken } from './User/types';
+import { CurrentUser, UserToken } from './User/types';
 import config from './config';
 import { Post } from './Post/model';
-
-
 
 
 mongoose.connect(config.MONGODB_URI)
@@ -45,13 +43,12 @@ const resolvers = {
 const server = new ApolloServer({
   typeDefs: [userTypeDef, postTypeDef, typeDefs],
   resolvers: merge(resolvers, userResolver, postResolver),
-  context: async ({ req }): Promise<{ currentUser: UserDoc | null;}> => {    
+  context: async ({ req }): Promise<CurrentUser | null> => {    
     const auth = req ? req.headers.authorization : null;    
     if (auth && auth.toLowerCase().startsWith('bearer ')) {
       try {
         const decodedToken = jwt.verify(auth.substring(7), config.SECRET) as UserToken; 
-        const currentUser = await User.findById(decodedToken.id);      
-        return { currentUser };    
+        return await User.findById(decodedToken.id, { name: 1, username: 1});         
       } catch (error){
         if(error instanceof JsonWebTokenError){
           throw new UserInputError('Invalid authorization header');
@@ -60,7 +57,7 @@ const server = new ApolloServer({
         }
       }
     }  
-    return { currentUser: null };
+    return null;
   }
 });
 

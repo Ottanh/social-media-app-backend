@@ -3,7 +3,7 @@ import User from "./model";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import 'dotenv/config';
-import { CreateUser } from "./types";
+import { CreateUser, CurrentUser } from "./types";
 import { Types } from "mongoose";
 import config from "../config";
 
@@ -55,7 +55,7 @@ export const userResolver = {
     findUser: async (_root: undefined, args: { username: string; }) => {
       return await User.findOne({username: args.username});
     },
-    me: (_root: undefined, _args: undefined, context: { currentUser: { id: string }; }) => {
+    me: (_root: undefined, _args: undefined, context: { currentUser: CurrentUser; }) => {
       return context.currentUser;
     }
   },
