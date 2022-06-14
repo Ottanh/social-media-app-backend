@@ -124,7 +124,7 @@ export const postResolver = {
         });
       }
 
-      const saved = await newReply.save()
+      return await newReply.save()
         .catch(error => {
           if(error instanceof UserInputError) {
             throw new UserInputError(error.message, {
@@ -132,9 +132,6 @@ export const postResolver = {
             });
           }
         });
-
-      console.log(saved);
-      return saved;
     },
     addLike: async (_root: undefined, args: { id: string}, context: { currentUser: CurrentUser }) => {
       const currentUser = context.currentUser;
@@ -142,12 +139,20 @@ export const postResolver = {
         throw new AuthenticationError('not authenticated');
       }
 
-      const post = await Post.findByIdAndUpdate(args.id, { $inc: { likes: 1}});
-      if(!post) {
-        throw new TypeError('Post not found');
+      const user = await User.updateOne({ _id: currentUser._id}, { $addToSet: { likes:  args.id}});
+
+      if(user.modifiedCount > 0) {
+        const [post, reply] = await Promise.all([
+          Post.findByIdAndUpdate(args.id, { $inc: { likes: 1}}), 
+          Reply.findByIdAndUpdate(args.id, { $inc: { likes: 1}})
+        ]);
+        if(!post && !reply) {
+          throw new TypeError('Post not found');
+        }
+        return post || reply;
+      } else {
+        throw new UserInputError('User has already liked the post');
       }
-      await User.findByIdAndUpdate(currentUser._id, { $addToSet: { likes: post._id }});
-      return post;
     }
   }
 };
