@@ -43,12 +43,13 @@ const resolvers = {
 const server = new ApolloServer({
   typeDefs: [userTypeDef, postTypeDef, typeDefs],
   resolvers: merge(resolvers, userResolver, postResolver),
-  context: async ({ req }): Promise<CurrentUser | null> => {    
+  context: async ({ req }): Promise<{currentUser: CurrentUser | null}> => {    
     const auth = req ? req.headers.authorization : null;    
     if (auth && auth.toLowerCase().startsWith('bearer ')) {
       try {
         const decodedToken = jwt.verify(auth.substring(7), config.SECRET) as UserToken; 
-        return await User.findById(decodedToken.id, { name: 1, username: 1});         
+        const currentUser = await User.findById(decodedToken.id, { name: 1, username: 1});   
+        return { currentUser };
       } catch (error){
         if(error instanceof JsonWebTokenError){
           throw new UserInputError('Invalid authorization header');
@@ -57,7 +58,7 @@ const server = new ApolloServer({
         }
       }
     }  
-    return null;
+    return { currentUser: null};
   }
 });
 

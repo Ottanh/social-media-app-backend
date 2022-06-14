@@ -84,7 +84,6 @@ export const postResolver = {
   Mutation: {
     createPost: async (_root: undefined, args: NewPost, context: { currentUser: UserType; }) => {
       const currentUser = context.currentUser;
-
       if (!currentUser) {      
         throw new AuthenticationError("not authenticated");
       }
@@ -107,7 +106,7 @@ export const postResolver = {
           }
         });
     },
-    createReply: async (_root: undefined, args: NewReply, context: { currentUser: UserType; }) => {
+    createReply: async (_root: undefined, args: NewReply, context: { currentUser: CurrentUser; }) => {
       const currentUser = context.currentUser;
       if (!currentUser) {      
         throw new AuthenticationError("not authenticated");
@@ -116,9 +115,7 @@ export const postResolver = {
       const newReply = new Reply({
           ...args, 
           user: { 
-            id: currentUser.id,
-            name: currentUser.name, 
-            username: currentUser.username
+            ...currentUser
            } 
          });
 
@@ -152,9 +149,7 @@ export const postResolver = {
       if(!post) {
         throw new TypeError('Post not found');
       }
-
       await User.findByIdAndUpdate(currentUser._id, { $addToSet: { likes: post._id }});
-
       return post;
     }
   }
