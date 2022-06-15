@@ -38,4 +38,4 @@ export const postSchema = new Schema<PostType>({
 });
 
 export const Post = model<PostType>('Post', postSchema);
-export const Reply = model<PostType>('Reply', postSchema);
+
