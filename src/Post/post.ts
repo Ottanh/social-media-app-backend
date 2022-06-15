@@ -27,6 +27,7 @@ export const userTypeDef = gql`
   type Mutation {
     createPost(
       content: String!
+      replyTo: String
     ): Post
     addLike(id: ID!): Post
     deleteLike(id: ID!): Post
@@ -39,16 +40,18 @@ export const postResolver = {
       return root._id.getTimestamp().toISOString();
     },
   },
+  PostUser: {
+    id: (root: { _id: Types.ObjectId } ) => {
+      return root._id;
+    },
+  },
   Query: {
     findPosts: async (_root: undefined, args: { username: string; id: string; replyTo: string; }) => {
       if(args.username){
-        const a = await Post.find({ 'user.username': args.username }).sort({_id: -1});
-        console.log(a[0]);
-        return a;
+        return await Post.find({ 'user.username': args.username }).sort({_id: -1});
       }
       if(args.id){
         const post = await Post.findById(args.id);
-        console.log(post);
         return [post];
       }
       if(args.replyTo){
@@ -64,7 +67,7 @@ export const postResolver = {
         throw new AuthenticationError("Not authenticated");
       } 
 
-      if(args.replyTo && await Post.exists({ _id: args.replyTo })){
+      if(args.replyTo && !await Post.exists({ _id: args.replyTo })){
         throw new UserInputError('Could not find original post',{
           invalidArgs: args.replyTo
         });
