@@ -76,14 +76,21 @@ export const postResolver = {
         user: { ...currentUser } 
        });
 
-      return await newPost.save()
-        .catch(error => {
-          if(error instanceof UserInputError) {
-            throw new UserInputError(error.message, {
-              invalidArgs: args
-            });
-          }
-        });
+      try {
+        return await newPost.save();
+      }
+      catch(error) {
+        if(error instanceof UserInputError) {
+          throw new UserInputError(error.message, {
+            invalidArgs: args
+          });
+        } else if (error instanceof Error) {
+          throw new Error(error.message);
+        } else {
+          console.log(error);
+          return null;
+        }
+      }
     },
     createReply: async (_root: undefined, args: NewReply, context: { currentUser: CurrentUser; }) => {
       const currentUser = context.currentUser;
@@ -107,14 +114,21 @@ export const postResolver = {
         });
       }
 
-      return await newReply.save()
-        .catch(error => {
+        try {
+          return await newReply.save();
+        }
+        catch(error) {
           if(error instanceof UserInputError) {
             throw new UserInputError(error.message, {
               invalidArgs: args
             });
+          } else if (error instanceof Error) {
+            throw new Error(error.message);
+          } else {
+            console.log(error);
+            return null;
           }
-        });
+        }
     },
     addLike: async (_root: undefined, args: { id: string}, context: { currentUser: CurrentUser }) => {
       const currentUser = context.currentUser;
