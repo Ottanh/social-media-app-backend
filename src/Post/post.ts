@@ -32,9 +32,8 @@ export const userTypeDef = gql`
       content: String!
       replyTo: String!
     ): Post
-    addLike(
-      id: ID!
-    ): Post
+    addLike(id: ID!): Post
+    deleteLike(id: ID!): Post
   }
 `;
 
@@ -149,6 +148,27 @@ export const postResolver = {
         return post || reply;
       } else {
         throw new UserInputError('User has already liked the post');
+      }
+    },
+    deleteLike: async (_root: undefined, args: { id: string}, context: { currentUser: CurrentUser }) => {
+      const currentUser = context.currentUser;
+      if (!currentUser) {      
+        throw new AuthenticationError('not authenticated');
+      }
+
+      const user = await User.updateOne({ _id: currentUser._id}, { $pull: { likes:  args.id}});
+
+      if(user.modifiedCount > 0) {
+        const [post, reply] = await Promise.all([
+          Post.findByIdAndUpdate(args.id, { $inc: { likes: -1}}), 
+          Reply.findByIdAndUpdate(args.id, { $inc: { likes: -1}})
+        ]);
+        if(!post && !reply) {
+          throw new TypeError('Post not found');
+        }
+        return post || reply;
+      } else {
+        throw new UserInputError('User has not liked the post');
       }
     }
   }
