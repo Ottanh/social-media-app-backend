@@ -3,6 +3,7 @@ import { PostType } from "./types";
 
 
 export const postSchema = new Schema<PostType>({
+  _id: Schema.Types.ObjectId,
   user: {
     _id: {
       type: Schema.Types.ObjectId,

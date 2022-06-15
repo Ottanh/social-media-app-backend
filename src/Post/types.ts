@@ -1,6 +1,7 @@
 import { Types } from "mongoose";
 
 export interface PostType {
+  _id: Types.ObjectId;
   user: {
     _id: string;
     name: string;

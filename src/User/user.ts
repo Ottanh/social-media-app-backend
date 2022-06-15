@@ -2,8 +2,7 @@ import { gql, UserInputError } from "apollo-server";
 import User from "./model";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import 'dotenv/config';
-import { CreateUser, CurrentUser } from "./types";
+import { NewUser, CurrentUser } from "./types";
 import { Types } from "mongoose";
 import config from "../config";
 
@@ -60,7 +59,7 @@ export const userResolver = {
     }
   },
   Mutation: {
-    createUser: async (_root: undefined, args: CreateUser) => {
+    createUser: async (_root: undefined, args: NewUser) => {
       const saltRounds = 13;
       const passwordHash = await bcrypt.hash(args.password, saltRounds);
 

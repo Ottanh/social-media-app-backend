@@ -1,7 +1,7 @@
-import { Types, Document } from "mongoose";
+import { Types } from "mongoose";
 
 export interface UserType {
-  id: string;
+  _id: Types.ObjectId;
   name: string;
   username: string;
   passwordHash: string;
@@ -14,7 +14,9 @@ export interface UserToken {
   id: string;
 }
 
-export interface CreateUser extends Omit<UserType, 'passwordHash'> {
+export interface NewUser  {
+  name: string;
+  username: string;
   password: string;
 }
 
@@ -24,5 +26,3 @@ export interface CurrentUser {
   name: string;
   username: string;
 }
-
-export type UserDoc = Document<unknown, UserType> & UserType & { _id: Types.ObjectId; };

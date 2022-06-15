@@ -23,7 +23,6 @@ export const userTypeDef = gql`
   }
   extend type Query {
     findPosts(username: String, id: String, replyTo: String): [Post]!
-    countPostReplies(id: String!): Int!
   }
   type Mutation {
     createPost(
@@ -43,7 +42,8 @@ export const postResolver = {
   Post: {
     date: (root: { _id: Types.ObjectId} ) => {
       return root._id.getTimestamp().toISOString();
-    }
+    },
+
   },
   Query: {
     findPosts: async (_root: undefined, args: { username: string; id: string; replyTo: string; }) => {
@@ -63,23 +63,6 @@ export const postResolver = {
       return await Post.find({}).sort({_id: -1});
       
     },
-    countPostReplies: async (_root: undefined, args: { id: string}) => {
-      const [post, reply] = await Promise.allSettled([
-        Post.findById(args.id), 
-        Reply.findById(args.id)
-      ]);
-      if(post.status === 'fulfilled' && reply.status === 'fulfilled') {
-        if(post.value && !reply.value) {
-          return post.value?.replies.length;
-        }
-        if(reply.value && !post.value) {
-          return reply.value?.replies.length;
-        }
-      } else {
-        throw new Error('Error finding post');
-      }
-      return -1;
-    }
   },
   Mutation: {
     createPost: async (_root: undefined, args: NewPost, context: { currentUser: UserType; }) => {
