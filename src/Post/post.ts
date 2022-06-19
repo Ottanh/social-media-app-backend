@@ -22,7 +22,8 @@ export const userTypeDef = gql`
     replies: [ID]!
   }
   extend type Query {
-    findPosts(username: String, id: String, replyTo: String): [Post]!
+    findPosts(username: String, replyTo: String): [Post]!
+    findPost(id: String!): Post
   }
   type Mutation {
     createPost(
@@ -59,6 +60,9 @@ export const postResolver = {
       }
       return await Post.find({}).sort({_id: -1});
     },
+    findPost: async (_root: undefined, args: { id: string; }) => {
+      return await Post.findById(args.id);
+    }
   },
   Mutation: {
     createPost: async (_root: undefined, args: NewPost, context: { currentUser: CurrentUser; }) => {
@@ -103,7 +107,7 @@ export const postResolver = {
       const user = await User.updateOne({ _id: currentUser._id}, { $addToSet: { likes:  args.id}});
 
       if(user.modifiedCount > 0) {
-        const post = await Post.findByIdAndUpdate(args.id, { $inc: { likes: 1}});
+        const post = await Post.findByIdAndUpdate(args.id, { $inc: { likes: 1}}, { new: true});
         if(!post) {
           throw new TypeError('Post not found');
         }
@@ -121,7 +125,7 @@ export const postResolver = {
       const user = await User.updateOne({ _id: currentUser._id}, { $pull: { likes:  args.id}});
 
       if(user.modifiedCount > 0) {
-        const post = await Post.findByIdAndUpdate(args.id, { $inc: { likes: -1}});
+        const post = await Post.findByIdAndUpdate(args.id, { $inc: { likes: -1}}, { new: true});
         if(!post) {
           throw new TypeError('Post not found');
         }

@@ -7,6 +7,7 @@ export interface UserType {
   passwordHash: string;
   description: string;
   likes: Types.ObjectId[];
+  followed: Types.ObjectId[];
 }
 
 export interface UserToken {

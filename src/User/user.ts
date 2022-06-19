@@ -1,4 +1,4 @@
-import { gql, UserInputError } from "apollo-server";
+import { AuthenticationError, gql, UserInputError } from "apollo-server";
 import User from "./model";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -10,7 +10,7 @@ import config from "../config";
 export const postTypeDef = gql`
   extend type Query {
     allUsers: [User]!
-    findUser(username: String!): User
+    findUser(username: String): User
     me: User
   }
   type User {
@@ -20,6 +20,7 @@ export const postTypeDef = gql`
     date: String!
     description: String
     likes: [ID]!
+    followed: [ID]!
   }
   type Token {
     value: String!
@@ -35,9 +36,10 @@ export const postTypeDef = gql`
       name: String!
     ): TokenAndUser
     login(
-    username: String!
-    password: String!
-  ): TokenAndUser
+      username: String!
+      password: String!
+    ): TokenAndUser
+    follow(id: ID!): User!
   }
 `;
 
@@ -54,8 +56,8 @@ export const userResolver = {
     findUser: async (_root: undefined, args: { username: string; }) => {
       return await User.findOne({username: args.username});
     },
-    me: (_root: undefined, _args: undefined, context: { currentUser: CurrentUser; }) => {
-      return context.currentUser;
+    me: async (_root: undefined, _args: undefined, context: { currentUser: CurrentUser; }) => {
+      return await User.findById(context.currentUser._id);
     }
   },
   Mutation: {
@@ -98,5 +100,13 @@ export const userResolver = {
 
       return { token: jwt.sign(userForToken, config.SECRET), user };
     },
+    follow: async (_root: undefined, args: { id: string }, context: { currentUser: CurrentUser }) => {
+      const currentUser = context.currentUser;
+      if (!currentUser) {      
+        throw new AuthenticationError('not authenticated');
+      }
+
+      return await User.findByIdAndUpdate(currentUser._id, { $addToSet: { followed: args.id } }, { new: true });
+    }
   }
 };
