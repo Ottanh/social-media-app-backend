@@ -40,6 +40,7 @@ export const postTypeDef = gql`
       password: String!
     ): TokenAndUser
     follow(id: ID!): User!
+    unFollow(id: ID!): User!
   }
 `;
 
@@ -107,6 +108,14 @@ export const userResolver = {
       }
 
       return await User.findByIdAndUpdate(currentUser._id, { $addToSet: { followed: args.id } }, { new: true });
+    },
+    unFollow: async (_root: undefined, args: { id: string }, context: { currentUser: CurrentUser }) => {
+      const currentUser = context.currentUser;
+      if (!currentUser) {      
+        throw new AuthenticationError('not authenticated');
+      }
+
+      return await User.findByIdAndUpdate(currentUser._id, { $pull: { followed: args.id } }, { new: true });
     }
   }
 };
