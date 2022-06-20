@@ -2,8 +2,9 @@ import { AuthenticationError, gql, UserInputError } from "apollo-server";
 import { CurrentUser } from "../User/types";
 import { Post } from "./model";
 import { NewPost } from "./types";
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import User from "../User/model";
+import { arrayRemove } from "../util";
 
 
 export const userTypeDef = gql`
@@ -21,6 +22,10 @@ export const userTypeDef = gql`
     replyTo: ID
     replies: [ID]!
   }
+  type LikeResponse {
+    post: Post
+    user: User
+  }
   extend type Query {
     findPosts(username: String, replyTo: String): [Post]!
     findPost(id: String!): Post
@@ -30,8 +35,8 @@ export const userTypeDef = gql`
       content: String!
       replyTo: String
     ): Post
-    addLike(id: ID!): Post
-    deleteLike(id: ID!): Post
+    addLike(id: ID!): LikeResponse
+    deleteLike(id: ID!): LikeResponse
   }
 `;
 
@@ -101,37 +106,47 @@ export const postResolver = {
     addLike: async (_root: undefined, args: { id: string}, context: { currentUser: CurrentUser }) => {
       const currentUser = context.currentUser;
       if (!currentUser) {      
-        throw new AuthenticationError('not authenticated');
+        throw new AuthenticationError('Not authenticated');
       }
 
-      const user = await User.updateOne({ _id: currentUser._id}, { $addToSet: { likes:  args.id}});
+      const user = await User.findById(currentUser._id);
+      if(!user) {
+        throw new TypeError('User not found');
+      }
 
-      if(user.modifiedCount > 0) {
-        const post = await Post.findByIdAndUpdate(args.id, { $inc: { likes: 1}}, { new: true});
+      if(user.likes.includes(new mongoose.Types.ObjectId(args.id))) {
+        throw new UserInputError('User has already liked the post');
+      } else {
+        user.likes = user.likes.concat(new mongoose.Types.ObjectId(args.id));
+        const savedUser = await user.save();
+        const post = await Post.findByIdAndUpdate(args.id, { $inc: { likes: 1 }}, { new: true});
         if(!post) {
           throw new TypeError('Post not found');
         }
-        return post;
-      } else {
-        throw new UserInputError('User has already liked the post');
+        return { post, user: savedUser };
       }
     },
     deleteLike: async (_root: undefined, args: { id: string}, context: { currentUser: CurrentUser }) => {
       const currentUser = context.currentUser;
       if (!currentUser) {      
-        throw new AuthenticationError('not authenticated');
+        throw new AuthenticationError('Not authenticated');
       }
 
-      const user = await User.updateOne({ _id: currentUser._id}, { $pull: { likes:  args.id}});
+      const user = await User.findById(currentUser._id);
+      if(!user) {
+        throw new TypeError('User not found');
+      }
 
-      if(user.modifiedCount > 0) {
+      if(!user.likes.includes(new mongoose.Types.ObjectId(args.id))) {
+        throw new UserInputError('User has not liked the post');
+      } else {
+        user.likes = arrayRemove(new mongoose.Types.ObjectId(args.id), user.likes);
+        const savedUser = await  user.save();
         const post = await Post.findByIdAndUpdate(args.id, { $inc: { likes: -1}}, { new: true});
         if(!post) {
           throw new TypeError('Post not found');
         }
-        return post;
-      } else {
-        throw new UserInputError('User has not liked the post');
+        return { post, user: savedUser };
       }
     }
   }
