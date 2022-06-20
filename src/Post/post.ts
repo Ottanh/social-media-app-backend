@@ -27,7 +27,7 @@ export const userTypeDef = gql`
     user: User
   }
   extend type Query {
-    findPosts(username: String, replyTo: String): [Post]!
+    findPosts(username: String, replyTo: String, userIds: [String]): [Post]!
     findPost(id: String!): Post
   }
   type Mutation {
@@ -52,13 +52,12 @@ export const postResolver = {
     },
   },
   Query: {
-    findPosts: async (_root: undefined, args: { username: string; id: string; replyTo: string; }) => {
+    findPosts: async (_root: undefined, args: { username: string; userIds: string[]; replyTo: string; }) => {
       if(args.username){
         return await Post.find({ 'user.username': args.username }).sort({_id: -1});
       }
-      if(args.id){
-        const post = await Post.findById(args.id);
-        return [post];
+      if(args.userIds){
+        return await Post.find({ "user._id": { $in: args.userIds} }).sort({_id: -1});
       }
       if(args.replyTo){
         return await Post.find({replyTo: args.replyTo}).sort({_id: -1});
