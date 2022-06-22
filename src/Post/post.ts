@@ -5,6 +5,7 @@ import { NewPost } from "./types";
 import mongoose, { Types } from 'mongoose';
 import User from "../User/model";
 import { arrayRemove } from "../util";
+import { getSignedGet } from "../S3/s3_signed_url";
 
 
 export const userTypeDef = gql`
@@ -18,6 +19,7 @@ export const userTypeDef = gql`
     user: PostUser!
     date: String!
     content: String!
+    image: String
     likes: Int!
     replyTo: ID
     replies: [ID]!
@@ -33,6 +35,7 @@ export const userTypeDef = gql`
   type Mutation {
     createPost(
       content: String!
+      image: String
       replyTo: String
     ): Post
     addLike(id: ID!): LikeResponse
@@ -44,6 +47,13 @@ export const postResolver = {
   Post: {
     date: (root: { _id: Types.ObjectId} ) => {
       return root._id.getTimestamp().toISOString();
+    },
+    image: async (root: { image: string} ) => {
+      if(!root.image) {
+        return null;
+      }
+
+      return await getSignedGet(root.image);
     },
   },
   PostUser: {

@@ -10,5 +10,15 @@ if(!SECRET) {
   throw new TypeError('SECRET is undefined');
 }
 
-export default { MONGODB_URI, SECRET };
+const S3_ACCESSKEY = process.env.S3_ACCESSKEYID;
+if(!S3_ACCESSKEY) {
+  throw new TypeError('S3_ACCESSKEY is undefined');
+}
+
+const S3_SECRETACCESSKEY = process.env.S3_SECRETACCESSKEY;
+if(!S3_SECRETACCESSKEY) {
+  throw new TypeError('S3_SECRETACCESSKEY is undefined');
+}
+
+export default { MONGODB_URI, SECRET, S3_ACCESSKEY, S3_SECRETACCESSKEY };
 

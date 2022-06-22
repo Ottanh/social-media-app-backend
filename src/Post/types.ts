@@ -7,15 +7,17 @@ export interface PostType {
     name: string;
     username: string;
   };
-  content: string;
+  content?: string;
+  image?: string;
   likes: number;
-  replyTo: Types.ObjectId;
+  replyTo?: Types.ObjectId;
   replies: Types.ObjectId[];
 }
 
 
 export interface NewPost {
   content: string;
+  image?: string;
   replyTo?: Types.ObjectId;
 }
 

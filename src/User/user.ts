@@ -104,7 +104,7 @@ export const userResolver = {
     follow: async (_root: undefined, args: { id: string }, context: { currentUser: CurrentUser }) => {
       const currentUser = context.currentUser;
       if (!currentUser) {      
-        throw new AuthenticationError('not authenticated');
+        throw new AuthenticationError('Not authenticated');
       }
 
       return await User.findByIdAndUpdate(currentUser._id, { $addToSet: { followed: args.id } }, { new: true });
@@ -112,7 +112,7 @@ export const userResolver = {
     unFollow: async (_root: undefined, args: { id: string }, context: { currentUser: CurrentUser }) => {
       const currentUser = context.currentUser;
       if (!currentUser) {      
-        throw new AuthenticationError('not authenticated');
+        throw new AuthenticationError('Not authenticated');
       }
 
       return await User.findByIdAndUpdate(currentUser._id, { $pull: { followed: args.id } }, { new: true });

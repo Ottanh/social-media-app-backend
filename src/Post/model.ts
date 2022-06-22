@@ -19,7 +19,11 @@ export const postSchema = new Schema<PostType>({
   },
   content: {
     type: String,
-    required: true
+    required: false,
+  },
+  image: {
+    type: String,
+    required: false
   },
   likes: {
     type: Number,
