@@ -7,7 +7,6 @@ import User from './User/model';
 import jwt, { JsonWebTokenError } from 'jsonwebtoken';
 import { CurrentUser, UserToken } from './User/types';
 import config from './config';
-import { Post } from './Post/model';
 import { getSignedPut } from './S3/s3_signed_url';
 
 
@@ -23,24 +22,22 @@ mongoose.connect(config.MONGODB_URI)
 const typeDefs = gql`
   type Query {
     _empty: String
-    search(searchword: String): SearchResult
-    getSignedPut(fileName: String!): String
+    getPutUrl(fileName: String!): String
+    getDeleteUrl(fileName: String!): String
   }
-  type SearchResult {
-    users: [User]
-    posts: [Post]
-  }
+
 `;
 
 
 const resolvers = {
   Query: {
-    search: async (_root: undefined, args: { searchword: string; }) => {
-      const posts = await Post.find({ content: { $regex: `.*${args.searchword}.*`, $options: 'i' } });
-      const users = await User.find({ username: { $regex: `.*${args.searchword}.*`, $options: 'i' } });
-      return { users, posts };
+    getPutUrl: async (_root: undefined, args: { fileName: string; }, context: { currentUser: CurrentUser }) => {
+      if (!context.currentUser) {      
+        throw new AuthenticationError('Not authenticated');
+      }
+      return await getSignedPut(args.fileName);
     },
-    getSignedPut: async (_root: undefined, args: { fileName: string; }, context: { currentUser: CurrentUser }) => {
+    getDeleteUrl: async (_root: undefined, args: { fileName: string; }, context: { currentUser: CurrentUser }) => {
       if (!context.currentUser) {      
         throw new AuthenticationError('Not authenticated');
       }

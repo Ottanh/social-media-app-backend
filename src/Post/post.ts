@@ -31,6 +31,7 @@ export const userTypeDef = gql`
   extend type Query {
     findPosts(username: String, replyTo: String, userIds: [String]): [Post]!
     findPost(id: String!): Post
+    searchPost(searchword: String!): [Post]!
   }
   type Mutation {
     createPost(
@@ -76,6 +77,12 @@ export const postResolver = {
     },
     findPost: async (_root: undefined, args: { id: string; }) => {
       return await Post.findById(args.id);
+    },
+    searchPost: async (_root: undefined, args: { searchword: string }) => {
+      if(args.searchword.length < 3) {
+        return [];
+      }
+      return await Post.find({ content: { $regex: `.*${args.searchword}.*`, $options: 'i' } });
     }
   },
   Mutation: {

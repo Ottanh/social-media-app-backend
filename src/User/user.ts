@@ -12,6 +12,7 @@ export const postTypeDef = gql`
     allUsers: [User]!
     findUser(username: String): User
     me: User
+    searchUser(searchword: String!): [User]
   }
   type User {
     id: ID!
@@ -59,6 +60,12 @@ export const userResolver = {
     },
     me: async (_root: undefined, _args: undefined, context: { currentUser: CurrentUser; }) => {
       return await User.findById(context.currentUser._id);
+    },
+    searchUser: async (_root: undefined, args: { searchword: string }) => {
+      if(args.searchword.length < 3) {
+        return [];
+      }
+      return await User.find({ username: { $regex: `.*${args.searchword}.*`, $options: 'i' } });
     }
   },
   Mutation: {
