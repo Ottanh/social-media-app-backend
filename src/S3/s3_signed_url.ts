@@ -4,7 +4,6 @@ import { s3Client } from "../../libs/s3Client";
 
 
 export const getSignedPut = async (fileName: string) => {
-
   const bucketParams = {
     Bucket: `sma-bucket`,
     Key: fileName
