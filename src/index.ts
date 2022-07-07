@@ -25,7 +25,6 @@ const typeDefs = gql`
     getPutUrl(fileName: String!): String
     getDeleteUrl(fileName: String!): String
   }
-
 `;
 
 

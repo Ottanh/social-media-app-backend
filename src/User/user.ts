@@ -42,6 +42,7 @@ export const postTypeDef = gql`
     ): TokenAndUser
     follow(id: ID!): User!
     unFollow(id: ID!): User!
+    editDescription(newDes: String!): User!
   }
 `;
 
@@ -123,6 +124,14 @@ export const userResolver = {
       }
 
       return await User.findByIdAndUpdate(currentUser._id, { $pull: { followed: args.id } }, { new: true });
+    },
+    editDescription: async (_root: undefined, args: { newDes: string }, context: { currentUser: CurrentUser }) => {
+      const currentUser = context.currentUser;
+      if (!currentUser) {      
+        throw new AuthenticationError('Not authenticated');
+      }
+
+      return await User.findByIdAndUpdate(currentUser._id,  { description: args.newDes }, { new: true });
     }
   }
 };
