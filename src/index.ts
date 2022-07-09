@@ -7,7 +7,7 @@ import User from './User/model';
 import jwt, { JsonWebTokenError } from 'jsonwebtoken';
 import { CurrentUser, UserToken } from './User/types';
 import config from './config';
-import { getSignedPut } from './S3/s3_signed_url';
+import { getSignedDelete, getSignedPut } from './S3/s3_signed_url';
 
 
 mongoose.connect(config.MONGODB_URI)
@@ -40,7 +40,7 @@ const resolvers = {
       if (!context.currentUser) {      
         throw new AuthenticationError('Not authenticated');
       }
-      return await getSignedPut(args.fileName);
+      return await getSignedDelete(args.fileName);
     }
   }
  };
