@@ -42,7 +42,7 @@ const getSecrets = () => {
         else {
             // Decrypts secret using the associated KMS key.
             // Depending on whether the secret is a string or binary, one of these fields will be populated.
-            if ('SecretString' in data) {
+            if (data && 'SecretString' in data) {
                 secret = data.SecretString as string;
             }
         }

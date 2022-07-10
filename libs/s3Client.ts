@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 
 import { S3Client } from "@aws-sdk/client-s3";
-import { SecretsManager } from 'aws-sdk';
+import { SecretsManager } from '@aws-sdk/client-secrets-manager';
 
 
 const REGION = "eu-north-1"; 
