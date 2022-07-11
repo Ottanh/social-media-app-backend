@@ -69,7 +69,7 @@ void (async() => {
     }
   });
 
-  server.listen({ port: 80}).then(({ url }) => {
+  server.listen().then(({ url }) => {
     console.log(`Server ready at ${url}`);
   }, (reject) => {
     console.log(reject);

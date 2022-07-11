@@ -65,10 +65,10 @@ export const postResolver = {
   Query: {
     findPosts: async (_root: undefined, args: { username: string; userIds: string[]; replyTo: string; }) => {
       if(args.username){
-        return await Post.find({ 'user.username': args.username }).sort({_id: -1});
+        return await Post.find({ 'user.username': args.username, replyTo: null }).sort({_id: -1});
       }
       if(args.userIds){
-        return await Post.find({ "user._id": { $in: args.userIds} }).sort({_id: -1});
+        return await Post.find({ "user._id": { $in: args.userIds}, replyTo: null }).sort({_id: -1});
       }
       if(args.replyTo){
         return await Post.find({replyTo: args.replyTo}).sort({_id: -1});
