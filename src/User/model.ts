@@ -17,6 +17,11 @@ const userSchema = new Schema<UserType>({
     required: true
   },
   description: String,
+  image: {
+    type: String,
+    required: true,
+    default: 'defaultUserPic.jpg'
+  },
   likes: [Schema.Types.ObjectId],
   followed: {
     type: [Schema.Types.ObjectId],

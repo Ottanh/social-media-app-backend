@@ -6,6 +6,7 @@ export interface UserType {
   username: string;
   passwordHash: string;
   description: string;
+  image: string;
   likes: Types.ObjectId[];
   followed: Types.ObjectId[];
 }

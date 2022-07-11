@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import { NewUser, CurrentUser } from "./types";
 import { Types } from "mongoose";
 import getSecrets from '../secrets';
+import { getSignedGet } from "../S3/s3_signed_url";
 
 
 export const postTypeDef = gql`
@@ -20,6 +21,7 @@ export const postTypeDef = gql`
     name: String!
     date: String!
     description: String
+    image: String!
     likes: [ID]!
     followed: [ID]!
   }
@@ -42,7 +44,7 @@ export const postTypeDef = gql`
     ): TokenAndUser
     follow(id: ID!): User!
     unFollow(id: ID!): User!
-    editDescription(newDes: String!): User!
+    editUser(description: String image: String): User!
   }
 `;
 
@@ -50,7 +52,13 @@ export const userResolver = {
   User: {
     date: (root: { _id: Types.ObjectId} ) => {
       return root._id.getTimestamp().toISOString();
-    }
+    },
+    image: async (root: { image: string} ) => {
+      if(!root.image) {
+        return null;
+      }
+      return await getSignedGet(root.image);
+    },
   },
   Query: {
     allUsers: async () => {
@@ -125,13 +133,13 @@ export const userResolver = {
 
       return await User.findByIdAndUpdate(currentUser._id, { $pull: { followed: args.id } }, { new: true });
     },
-    editDescription: async (_root: undefined, args: { newDes: string }, context: { currentUser: CurrentUser }) => {
+    editUser: async (_root: undefined, args: { description: string, image: string }, context: { currentUser: CurrentUser }) => {
       const currentUser = context.currentUser;
       if (!currentUser) {      
         throw new AuthenticationError('Not authenticated');
       }
 
-      return await User.findByIdAndUpdate(currentUser._id,  { description: args.newDes }, { new: true });
+      return await User.findByIdAndUpdate(currentUser._id,  { description: args.description, image: args.image }, { new: true });
     }
   }
 };
