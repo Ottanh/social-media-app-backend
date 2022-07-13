@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { NewUser, CurrentUser } from "./types";
 import { Types } from "mongoose";
-import getSecrets from '../secrets';
+import config from "../config";
 import { getSignedGet } from "../S3/s3_signed_url";
 
 
@@ -98,7 +98,7 @@ export const userResolver = {
           }
         });
 
-        return { token: jwt.sign(userForToken, (await getSecrets).SECRET), user: savedUser };
+        return { token: jwt.sign(userForToken, (await config).SECRET), user: savedUser };
     },
     login: async (_root: undefined, args: { username: string; password: string; }) => {
       const user = await User.findOne({ username: args.username });
@@ -115,7 +115,7 @@ export const userResolver = {
         id: user._id,
       };
 
-      return { token: jwt.sign(userForToken, (await getSecrets).SECRET), user };
+      return { token: jwt.sign(userForToken, (await config).SECRET), user };
     },
     follow: async (_root: undefined, args: { id: string }, context: { currentUser: CurrentUser }) => {
       const currentUser = context.currentUser;

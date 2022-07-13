@@ -36,7 +36,7 @@ export const postSchema = new Schema<PostType>({
   },
   replies: {
     type: [Schema.Types.ObjectId],
-    required: false,
+    required: true,
     default: [],
   }
 });
