@@ -51,7 +51,7 @@ export const postTypeDef = gql`
 export const userResolver = {
   User: {
     date: (root: { _id: Types.ObjectId} ) => {
-      return root._id.getTimestamp().toISOString();
+      return root._id.getTimestamp();
     },
     image: async (root: { image: string} ) => {
       if(!root.image) {

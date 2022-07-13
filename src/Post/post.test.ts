@@ -71,7 +71,6 @@ beforeEach(async () => {
 
 
 test('Returns all posts', async () => {
-
   const FIND_POSTS = gql`
     query findPosts($username: String) {
       findPosts (username: $username) { 
