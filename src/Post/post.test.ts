@@ -1,10 +1,11 @@
-import { ApolloServer, gql } from 'apollo-server';
+import { ApolloServer } from 'apollo-server';
 import { merge } from 'lodash';
 import { typeDefs, resolvers } from '..';
 import { postTypeDef, userResolver } from '../User/user';
 import { Post } from './model';
 import { userTypeDef, postResolver } from './post';
 import mongoose from 'mongoose';
+import { FIND_POSTS, FIND_POST, SEARCH_POST, CREATE_POST } from './testQueries';
 
 const postID1 = new mongoose.Types.ObjectId();
 const userID = new mongoose.Types.ObjectId();
@@ -56,6 +57,7 @@ const initialPosts = [
   }, 
 ];
 
+
 beforeEach(async () => {
   await Post.deleteMany({});  
   let postObject = new Post(initialPosts[0]); 
@@ -67,25 +69,6 @@ beforeEach(async () => {
 });
 
 describe('findPosts', () => {
-  const FIND_POSTS = gql`
-    query findPosts($username: String, $replyTo: String, $userIds: [String]) {
-       findPosts (username: $username, replyTo: $replyTo, userIds: $userIds) { 
-         id
-         user {
-           id
-           name
-           username
-         }
-        date
-        content
-        image
-        likes
-         replyTo
-         replies
-      }
-    }
-  `;
-
   test('Returns all posts', async () => {
     const result = await testServer.executeOperation({
       query: FIND_POSTS,
@@ -135,23 +118,6 @@ describe('findPosts', () => {
 });
 
 describe('findPost', () => {
-  const FIND_POST = gql`
-    query findPost($id: String!) {
-      findPost(id: $id) { 
-        id
-        user {
-          name
-          username
-        }
-        date
-        content
-        image
-        likes
-        replies
-      }
-    }
-  `;
-
   test('Returns correct post', async () => {
     const result = await testServer.executeOperation({
       query: FIND_POST,
@@ -165,23 +131,6 @@ describe('findPost', () => {
 })
 
 describe('searchPost', () => {
-  const SEARCH_POST = gql`
-    query searchPost($searchword: String!) {
-      searchPost(searchword: $searchword) { 
-        id
-        user {
-          id
-          name
-          username
-        }
-        date
-        content
-        likes
-        replies
-      }
-    }
-  `;
-
   test('Returns correct post', async () => {
     const result = await testServer.executeOperation({
       query: SEARCH_POST,
@@ -190,6 +139,41 @@ describe('searchPost', () => {
 
     expect(result.errors).toBeUndefined();
     expect(result.data?.searchPost[0].content).toBe('test1');
+  })
+})
+
+
+describe('createPost', () => {
+  test('Creates new post when logged in', async () => {
+    const result = await testServerLoggedIn.executeOperation({
+      query: CREATE_POST,
+      variables: { content: 'newPost' }
+    });
+
+    const newPost = await testServerLoggedIn.executeOperation({
+      query: SEARCH_POST,
+      variables: { searchword: 'newPost'}
+    });
+
+    expect(result.errors).toBeUndefined();
+    expect(newPost.errors).toBeUndefined();
+    expect(newPost.data?.searchPost[0].content).toBe('newPost');
+  })
+
+  test('Throws error when not logged in', async () => {
+    const result = await testServer.executeOperation({
+      query: CREATE_POST,
+      variables: { content: 'newPost' }
+    });
+
+    const newPost = await testServer.executeOperation({
+      query: SEARCH_POST,
+      variables: { searchword: 'newPost'}
+    });
+
+    expect(result.errors?.[0].message).toBe('Not authenticated');
+    expect(newPost.errors).toBeUndefined();
+    expect(newPost.data?.searchPost).toHaveLength(0);
   })
 
 })
