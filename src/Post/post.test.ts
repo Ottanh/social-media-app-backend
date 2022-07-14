@@ -1,41 +1,26 @@
-import { ApolloServer, gql, UserInputError } from 'apollo-server';
+import { ApolloServer, gql } from 'apollo-server';
 import { merge } from 'lodash';
 import { typeDefs, resolvers } from '..';
-import User from '../User/model';
-import { CurrentUser, UserToken } from '../User/types';
 import { postTypeDef, userResolver } from '../User/user';
 import { Post } from './model';
 import { userTypeDef, postResolver } from './post';
-import jwt, { JsonWebTokenError } from 'jsonwebtoken';
-import config from '../config';
 import mongoose from 'mongoose';
-
-
-const testServer = new ApolloServer({
-  typeDefs: [userTypeDef, postTypeDef, typeDefs],
-  resolvers: merge(resolvers, userResolver, postResolver),
-  context: async ({ req }): Promise<{currentUser: CurrentUser | null}> => {    
-    const auth = req ? req.headers.authorization : null;    
-    if (auth && auth.toLowerCase().startsWith('bearer ')) {
-      try {
-        const decodedToken = jwt.verify(auth.substring(7), (await config).SECRET) as UserToken; 
-        const currentUser = await User.findById(decodedToken.id, { name: 1, username: 1});   
-        return { currentUser };
-      } catch (error){
-        if(error instanceof JsonWebTokenError){
-          throw new UserInputError('Invalid authorization header');
-        } else {
-          console.log(error);
-        }
-      }
-    }  
-    return { currentUser: null};
-  }
-});
 
 const postID1 = new mongoose.Types.ObjectId();
 const userID = new mongoose.Types.ObjectId();
 const userID2 = new mongoose.Types.ObjectId();
+
+const testServer = new ApolloServer({
+  typeDefs: [userTypeDef, postTypeDef, typeDefs],
+  resolvers: merge(resolvers, userResolver, postResolver),
+  context: { currentUser: null }
+});
+
+export const testServerLoggedIn = new ApolloServer({
+  typeDefs: [userTypeDef, postTypeDef, typeDefs],
+  resolvers: merge(resolvers, userResolver, postResolver),
+  context: { currentUser: { _id: userID, name: 'testUser', username: 'testUserName' } }
+});
 
 const initialPosts = [  
   {    
@@ -81,9 +66,7 @@ beforeEach(async () => {
   await postObject.save();
 });
 
-describe('FindPosts', () => {
-
-
+describe('findPosts', () => {
   const FIND_POSTS = gql`
     query findPosts($username: String, $replyTo: String, $userIds: [String]) {
        findPosts (username: $username, replyTo: $replyTo, userIds: $userIds) { 
@@ -151,8 +134,7 @@ describe('FindPosts', () => {
 
 });
 
-describe('FindPost', () => {
-
+describe('findPost', () => {
   const FIND_POST = gql`
     query findPost($id: String!) {
       findPost(id: $id) { 
@@ -178,6 +160,36 @@ describe('FindPost', () => {
 
     expect(result.errors).toBeUndefined();
     expect(result.data?.findPost.content).toBe('test1');
+  })
+
+})
+
+describe('searchPost', () => {
+  const SEARCH_POST = gql`
+    query searchPost($searchword: String!) {
+      searchPost(searchword: $searchword) { 
+        id
+        user {
+          id
+          name
+          username
+        }
+        date
+        content
+        likes
+        replies
+      }
+    }
+  `;
+
+  test('Returns correct post', async () => {
+    const result = await testServer.executeOperation({
+      query: SEARCH_POST,
+      variables: { searchword: 'test1'}
+    });
+
+    expect(result.errors).toBeUndefined();
+    expect(result.data?.searchPost[0].content).toBe('test1');
   })
 
 })
