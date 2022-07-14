@@ -71,17 +71,17 @@ const initialPosts = [
   }, 
 ];
 
+beforeEach(async () => {
+  await Post.deleteMany({});  
+  let postObject = new Post(initialPosts[0]); 
+  await postObject.save(); 
+  postObject = new Post(initialPosts[1]);  
+  await postObject.save();
+  postObject = new Post(initialPosts[2]);  
+  await postObject.save();
+});
 
 describe('FindPosts', () => {
-  beforeEach(async () => {
-    await Post.deleteMany({});  
-    let postObject = new Post(initialPosts[0]); 
-    await postObject.save(); 
-    postObject = new Post(initialPosts[1]);  
-    await postObject.save();
-    postObject = new Post(initialPosts[2]);  
-    await postObject.save();
-  });
 
 
   const FIND_POSTS = gql`
@@ -150,3 +150,34 @@ describe('FindPosts', () => {
   });
 
 });
+
+describe('FindPost', () => {
+
+  const FIND_POST = gql`
+    query findPost($id: String!) {
+      findPost(id: $id) { 
+        id
+        user {
+          name
+          username
+        }
+        date
+        content
+        image
+        likes
+        replies
+      }
+    }
+  `;
+
+  test('Returns correct post', async () => {
+    const result = await testServer.executeOperation({
+      query: FIND_POST,
+      variables: { id: postID1.toString()}
+    });
+
+    expect(result.errors).toBeUndefined();
+    expect(result.data?.findPost.content).toBe('test1');
+  })
+
+})
