@@ -68,6 +68,9 @@ export const userResolver = {
       return await User.findOne({username: args.username});
     },
     me: async (_root: undefined, _args: undefined, context: { currentUser: CurrentUser; }) => {
+      if(!context.currentUser){
+        return null;
+      }
       return await User.findById(context.currentUser._id);
     },
     searchUser: async (_root: undefined, args: { searchword: string }) => {

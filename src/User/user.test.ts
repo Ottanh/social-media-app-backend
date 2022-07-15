@@ -1,8 +1,8 @@
 import { Post } from '../Post/model';
 import mongoose from 'mongoose';
-import { GET_ALL_USERS } from './testQueries';
+import { FIND_USER, GET_ALL_USERS, ME } from './testQueries';
 import User from '../User/model';
-import { loggedInUserID, testServer } from '../test-servers';
+import { loggedInUserID, testServer, testServerLoggedIn } from '../test-servers';
 
 
 const userID2 = new mongoose.Types.ObjectId();
@@ -45,3 +45,35 @@ describe('allUsers', () => {
   });
 });
 
+
+describe('findUser', () => {
+  test('Returns correct user', async () => {
+    const result = await testServer.executeOperation({
+      query: FIND_USER,
+      variables: { username: 'testUserName' }
+    });
+
+    expect(result.errors).toBeUndefined();
+    expect(result.data?.findUser.username).toBe('testUserName');
+  });
+});
+
+describe('me', () => {
+  test('Returns logged in user', async () => {
+    const result = await testServerLoggedIn.executeOperation({
+      query: ME,
+    });
+
+    expect(result.errors).toBeUndefined();
+    expect(result.data?.me.username).toBe('testUserName');
+  });
+
+  test('Returns hh', async () => {
+    const result = await testServer.executeOperation({
+      query: ME,
+    });
+
+    expect(result.errors).toBeUndefined();
+    expect(result.data?.me).toBe(null);
+  });
+});
