@@ -1,6 +1,6 @@
 import { Post } from '../Post/model';
 import mongoose from 'mongoose';
-import { CREATE_USER, FIND_USER, FOLLOW, GET_ALL_USERS, LOGIN, ME, SEARCH_USER, UNFOLLOW } from './testQueries';
+import { CREATE_USER, EDIT_USER, FIND_USER, FOLLOW, GET_ALL_USERS, LOGIN, ME, SEARCH_USER, UNFOLLOW } from './testQueries';
 import User from '../User/model';
 import { loggedInUserID, testServer, testServerLoggedIn } from '../test-servers';
 
@@ -127,7 +127,7 @@ describe('login', () => {
 })
 
 describe('follow', () => {
-  test('Adds user to followed when logged in', async () => {
+  test('Adds user to followed', async () => {
     const result = await testServerLoggedIn.executeOperation({
       query: FOLLOW,
       variables: { followId: userID2.toString() }
@@ -184,7 +184,7 @@ describe('follow', () => {
 })
 
 describe('unFollow', () => {
-  test('Removes user from followed when logged in', async () => {
+  test('Removes user from followed', async () => {
     await testServerLoggedIn.executeOperation({
       query: FOLLOW,
       variables: { followId: userID2.toString() }
@@ -237,5 +237,42 @@ describe('unFollow', () => {
     expect(result.errors?.[0].message).toBe('Not authenticated');
     expect(user.errors).toBeUndefined();
     expect(user.data?.findUser.followed).toHaveLength(0);
+  })
+})
+
+
+describe('editUser', () => {
+  test('Changes users image and description', async () => {
+    const result = await testServerLoggedIn.executeOperation({
+      query: EDIT_USER,
+      variables: { image: 'image.jpg', description: 'testing' }
+    });
+
+    const editedUser = await testServerLoggedIn.executeOperation({
+      query: SEARCH_USER,
+      variables: { searchword: 'testUserName'}
+    });
+
+    expect(result.errors).toBeUndefined();
+    expect(editedUser.errors).toBeUndefined();
+    expect(editedUser.data?.searchUser[0].description).toBe('testing');
+    expect(editedUser.data?.searchUser[0].image).toContain('image.jpg');
+  })
+
+  test('Throws error when not logged in', async () => {
+    const result = await testServer.executeOperation({
+      query: EDIT_USER,
+      variables: { image: 'image', description: 'testing' }
+    });
+
+    const editedUser = await testServer.executeOperation({
+      query: SEARCH_USER,
+      variables: { searchword: 'testUserName'}
+    });
+
+    expect(result.errors?.[0].message).toBe('Not authenticated');
+    expect(editedUser.errors).toBeUndefined();
+    expect(editedUser.data?.searchUser[0].description).toBe(null);
+    expect(editedUser.data?.searchUser[0].image).toContain('defaultUserPic.jpg');
   })
 })

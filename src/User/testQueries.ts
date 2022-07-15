@@ -125,3 +125,18 @@ export const UNFOLLOW = gql`
     }
   }
 `;
+
+export const EDIT_USER = gql`
+  mutation EditUser($description: String, $image: String) {
+    editUser(description: $description, image: $image) {
+      id
+      username
+      name
+      date
+      description
+      image
+      likes
+      followed
+    }
+  }
+`;
