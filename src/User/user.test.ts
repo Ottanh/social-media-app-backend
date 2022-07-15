@@ -1,6 +1,6 @@
 import { Post } from '../Post/model';
 import mongoose from 'mongoose';
-import { CREATE_USER, FIND_USER, GET_ALL_USERS, LOGIN, ME, SEARCH_USER } from './testQueries';
+import { CREATE_USER, FIND_USER, FOLLOW, GET_ALL_USERS, LOGIN, ME, SEARCH_USER, UNFOLLOW } from './testQueries';
 import User from '../User/model';
 import { loggedInUserID, testServer, testServerLoggedIn } from '../test-servers';
 
@@ -123,5 +123,119 @@ describe('login', () => {
     expect(result.errors).toBeUndefined();
     expect(result.data?.login.token).toBeDefined();
     expect(result.data?.login.user.username).toBe('newUserName');
+  })
+})
+
+describe('follow', () => {
+  test('Adds user to followed when logged in', async () => {
+    const result = await testServerLoggedIn.executeOperation({
+      query: FOLLOW,
+      variables: { followId: userID2.toString() }
+    });
+
+    const user = await testServerLoggedIn.executeOperation({
+      query: FIND_USER,
+      variables: { username: 'testUserName' }
+    });
+
+    expect(result.errors).toBeUndefined();
+    expect(user.errors).toBeUndefined();
+    expect(user.data?.findUser.followed).toStrictEqual([userID2.toString()]);
+  })
+
+  
+
+  test('Does nothing when user is already followed', async () => {
+    await testServerLoggedIn.executeOperation({
+      query: FOLLOW,
+      variables: { followId: userID2.toString() }
+    });
+
+    const result = await testServerLoggedIn.executeOperation({
+      query: FOLLOW,
+      variables: { followId: userID2.toString() }
+    });
+
+    const user = await testServerLoggedIn.executeOperation({
+      query: FIND_USER,
+      variables: { username: 'testUserName' }
+    });
+
+    expect(result.errors).toBeUndefined();
+    expect(user.errors).toBeUndefined();
+    expect(user.data?.findUser.followed).toStrictEqual([userID2.toString()]);
+  })
+
+  test('Throws error when not logged in', async () => {
+    const result = await testServer.executeOperation({
+      query: FOLLOW,
+      variables: { followId: userID2.toString() }
+    });
+
+    const user = await testServerLoggedIn.executeOperation({
+      query: FIND_USER,
+      variables: { username: 'testUserName' }
+    });
+
+    expect(result.errors?.[0].message).toBe('Not authenticated');
+    expect(user.errors).toBeUndefined();
+    expect(user.data?.findUser.followed).toHaveLength(0);
+  })
+})
+
+describe('unFollow', () => {
+  test('Removes user from followed when logged in', async () => {
+    await testServerLoggedIn.executeOperation({
+      query: FOLLOW,
+      variables: { followId: userID2.toString() }
+    });
+
+    const result = await testServerLoggedIn.executeOperation({
+      query: UNFOLLOW,
+      variables: { unFollowId: userID2.toString() }
+    });
+
+    const user = await testServerLoggedIn.executeOperation({
+      query: FIND_USER,
+      variables: { username: 'testUserName' }
+    });
+
+    expect(result.errors).toBeUndefined();
+    expect(user.errors).toBeUndefined();
+    expect(user.data?.findUser.followed).toHaveLength(0);
+  })
+
+  test('Does nothing when user is not followed', async () => {
+    const result = await testServerLoggedIn.executeOperation({
+      query: UNFOLLOW,
+      variables: { unFollowId: userID2.toString() }
+    });
+
+    const user = await testServerLoggedIn.executeOperation({
+      query: FIND_USER,
+      variables: { username: 'testUserName' }
+    });
+
+    expect(result.errors).toBeUndefined();
+    expect(user.errors).toBeUndefined();
+    expect(user.data?.findUser.followed).toHaveLength(0);
+  })
+
+  
+
+  test('Throws error when not logged in', async () => {
+    const result = await testServer.executeOperation({
+      query: UNFOLLOW,
+      variables: { unFollowId: userID2.toString() }
+    });
+
+    const user = await testServerLoggedIn.executeOperation({
+      query: FIND_USER,
+      variables: { username: 'testUserName' }
+    });
+
+    expect(result.errors?.[0].message).toBe('Not authenticated');
+    expect(user.errors).toBeUndefined();
+    expect(user.data?.findUser.followed).toHaveLength(0);
   })
 })

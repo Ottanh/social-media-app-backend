@@ -95,3 +95,33 @@ export const LOGIN = gql`
     }
   }
 `;
+
+export const FOLLOW = gql`
+  mutation Follow($followId: ID!) {
+    follow(id: $followId) {
+      id
+      username
+      name
+      date
+      description
+      image
+      likes
+      followed
+    }
+  }
+`;
+
+export const UNFOLLOW = gql`
+  mutation UnFollow($unFollowId: ID!) {
+    unFollow(id: $unFollowId) {
+      id
+      username
+      name
+      date
+      description
+      image
+      likes
+      followed
+    }
+  }
+`;
