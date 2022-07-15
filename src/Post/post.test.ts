@@ -1,27 +1,13 @@
-import { ApolloServer } from 'apollo-server';
-import { merge } from 'lodash';
-import { typeDefs, resolvers } from '..';
-import { postTypeDef, userResolver } from '../User/user';
 import { Post } from './model';
-import { userTypeDef, postResolver } from './post';
 import mongoose from 'mongoose';
-import { FIND_POSTS, FIND_POST, SEARCH_POST, CREATE_POST } from './testQueries';
+import { FIND_POSTS, FIND_POST, SEARCH_POST, CREATE_POST, ADD_LIKE, DELETE_LIKE } from './testQueries';
+import User from '../User/model';
+import { loggedInUserID, testServer, testServerLoggedIn } from '../test-servers';
+
 
 const postID1 = new mongoose.Types.ObjectId();
-const userID = new mongoose.Types.ObjectId();
+const postID2 = new mongoose.Types.ObjectId();
 const userID2 = new mongoose.Types.ObjectId();
-
-const testServer = new ApolloServer({
-  typeDefs: [userTypeDef, postTypeDef, typeDefs],
-  resolvers: merge(resolvers, userResolver, postResolver),
-  context: { currentUser: null }
-});
-
-export const testServerLoggedIn = new ApolloServer({
-  typeDefs: [userTypeDef, postTypeDef, typeDefs],
-  resolvers: merge(resolvers, userResolver, postResolver),
-  context: { currentUser: { _id: userID, name: 'testUser', username: 'testUserName' } }
-});
 
 const initialPosts = [  
   {    
@@ -30,12 +16,13 @@ const initialPosts = [
     image: 'defaultUserPic.png',
     replyTo: null,
     user: {
-      _id: userID,
+      _id: loggedInUserID,
       name: 'testUser',
       username: 'testUserName'
     }
   },  
   {    
+    _id: postID2,
     content: 'test2',
     image: null,
     replyTo: postID1,
@@ -57,16 +44,26 @@ const initialPosts = [
   }, 
 ];
 
+const user = {
+  _id: loggedInUserID,
+  name: 'testUser',
+  username: 'testUserName',
+  passwordHash: 'password'
+}
 
 beforeEach(async () => {
   await Post.deleteMany({});  
+  await User.deleteMany({});
   let postObject = new Post(initialPosts[0]); 
   await postObject.save(); 
   postObject = new Post(initialPosts[1]);  
   await postObject.save();
   postObject = new Post(initialPosts[2]);  
   await postObject.save();
+  const userObject = new User(user);
+  await userObject.save();
 });
+
 
 describe('findPosts', () => {
   test('Returns all posts', async () => {
@@ -106,7 +103,7 @@ describe('findPosts', () => {
   test('Returns posts from multiple users', async () => {
     const result = await testServer.executeOperation({
       query: FIND_POSTS,
-      variables: { userIds: [userID.toString(), userID2.toString()]}
+      variables: { userIds: [loggedInUserID.toString(), userID2.toString()]}
     });
 
     expect(result.errors).toBeUndefined();
@@ -176,4 +173,117 @@ describe('createPost', () => {
     expect(newPost.data?.searchPost).toHaveLength(0);
   })
 
+})
+
+
+describe('addLike', () => {
+  test('Adds like to post when logged in', async () => {
+    const result = await testServerLoggedIn.executeOperation({
+      query: ADD_LIKE,
+      variables: { id: postID1.toString() }
+    });
+
+    const likedPost = await testServerLoggedIn.executeOperation({
+      query: FIND_POST,
+      variables: { id: postID1.toString() }
+    });
+
+    expect(result.errors).toBeUndefined();
+    expect(likedPost.errors).toBeUndefined();
+    expect(likedPost.data?.findPost.likes).toBe(1);
+  })
+
+  test('Throws error when user has already liked post', async () => {
+    await testServerLoggedIn.executeOperation({
+      query: ADD_LIKE,
+      variables: { id: postID1.toString() }
+    });
+
+    const result = await testServerLoggedIn.executeOperation({
+      query: ADD_LIKE,
+      variables: { id: postID1.toString() }
+    });
+
+    const likedPost = await testServerLoggedIn.executeOperation({
+      query: FIND_POST,
+      variables: { id: postID1.toString() }
+    });
+
+    expect(result.errors?.[0].message).toBe('User has already liked the post');
+    expect(likedPost.errors).toBeUndefined();
+    expect(likedPost.data?.findPost.likes).toBe(1);
+  })
+
+  test('Throws error when not logged in', async () => {
+    const result = await testServer.executeOperation({
+      query: ADD_LIKE,
+      variables: { id: postID1.toString() }
+    });
+
+    const likedPost = await testServer.executeOperation({
+      query: FIND_POST,
+      variables: { id: postID1.toString() }
+    });
+
+    expect(result.errors?.[0].message).toBe('Not authenticated');
+    expect(likedPost.errors).toBeUndefined();
+    expect(likedPost.data?.findPost.likes).toBe(0);
+  })
+})
+
+describe('deleteLike', () => {
+  beforeEach(async () => {
+    await testServerLoggedIn.executeOperation({
+      query: ADD_LIKE,
+      variables: { id: postID1.toString() }
+    });
+  })
+
+  test('Deletes like from post when logged in', async () => {
+    const result = await testServerLoggedIn.executeOperation({
+      query: DELETE_LIKE,
+      variables: { id: postID1.toString() }
+    });
+
+    const likedPost = await testServerLoggedIn.executeOperation({
+      query: FIND_POST,
+      variables: { id: postID1.toString() }
+    });
+
+    expect(result.errors).toBeUndefined();
+    expect(likedPost.errors).toBeUndefined();
+    expect(likedPost.data?.findPost.likes).toBe(0);
+  })
+
+  test('Throws error when user has not liked the post', async () => {
+    const result = await testServerLoggedIn.executeOperation({
+      query: DELETE_LIKE,
+      variables: { id: postID2.toString() }
+    });
+
+    const likedPost = await testServerLoggedIn.executeOperation({
+      query: FIND_POST,
+      variables: { id: postID2.toString() }
+    });
+
+    expect(result.errors?.[0].message).toBe('User has not liked the post');
+    expect(likedPost.errors).toBeUndefined();
+    expect(likedPost.data?.findPost.likes).toBe(0);
+  })
+
+  test('Throws error when not logged in', async () => {
+    const result = await testServer.executeOperation({
+      query: DELETE_LIKE,
+      variables: { id: postID1.toString() }
+    });
+
+    const likedPost = await testServer.executeOperation({
+      query: FIND_POST,
+      variables: { id: postID1.toString() }
+    });
+
+    expect(result.errors?.[0].message).toBe('Not authenticated');
+    expect(likedPost.errors).toBeUndefined();
+    expect(likedPost.data?.findPost.likes).toBe(1);
+  })
 })

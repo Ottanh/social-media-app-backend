@@ -9,12 +9,6 @@ import { getSignedGet } from "../S3/s3_signed_url";
 
 
 export const postTypeDef = gql`
-  extend type Query {
-    allUsers: [User]!
-    findUser(username: String): User
-    me: User
-    searchUser(searchword: String!): [User]
-  }
   type User {
     id: ID!
     username: String!
@@ -31,6 +25,12 @@ export const postTypeDef = gql`
   type TokenAndUser {
     token: String!
     user: User!
+  }
+  extend type Query {
+    allUsers: [User]!
+    findUser(username: String): User
+    me: User
+    searchUser(searchword: String!): [User]
   }
   type Mutation {
     createUser(
