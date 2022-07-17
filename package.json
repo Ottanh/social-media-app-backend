@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test-post": "cross-env NODE_ENV=test jest post.test.ts --verbose --runInBand --forceExit",
-    "test-user": "cross-env NODE_ENV=test jest user.test.ts --verbose --runInBand --forceExit",
+    "test-post": "cross-env NODE_ENV=test jest post.test.ts --testTimeout=20000 --verbose --runInBand --forceExit",
+    "test-user": "cross-env NODE_ENV=test jest user.test.ts --testTimeout=20000 --verbose --runInBand --forceExit",
     "tsc": "tsc",
     "dev": "cross-env NODE_ENV=development ts-node-dev src/index.ts",
     "lint": "eslint --ext .ts .",

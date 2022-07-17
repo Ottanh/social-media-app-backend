@@ -24,7 +24,6 @@ const initialUsers = [
 
 
 beforeEach(async () => {
-  jest.setTimeout(20000);
   await Post.deleteMany({});  
   await User.deleteMany({});
   let userObject = new User(initialUsers[0]);
