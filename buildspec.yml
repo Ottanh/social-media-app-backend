@@ -9,8 +9,8 @@ phases:
   pre_build:
     commands:
         - npm run lint
-        - npm run test-post -- --watchAll=false
-        - npm run test-user -- --watchAll=false
+        - npm run test-post
+        - npm run test-user
   build:
     commands:
         - npm run tsc
