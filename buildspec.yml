@@ -1,0 +1,20 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 16
+    commands:
+        - npm install
+  pre_build:
+    commands:
+        - npm run lint
+        - npm run test-post -- --watchAll=false
+        - npm run test-user -- --watchAll=false
+  build:
+    commands:
+        - npm run tsc
+     
+artifacts:
+  files:
+    - sma/**/*
