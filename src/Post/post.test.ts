@@ -52,6 +52,7 @@ const user = {
 }
 
 beforeEach(async () => {
+  jest.setTimeout(20000);
   await Post.deleteMany({});  
   await User.deleteMany({});
   let postObject = new Post(initialPosts[0]); 
