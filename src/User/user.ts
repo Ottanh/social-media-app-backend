@@ -28,7 +28,8 @@ export const postTypeDef = gql`
   }
   extend type Query {
     allUsers: [User]!
-    findUser(username: String): User
+    findUser(username: String!): User
+    findUsers(userIds: [String]!): [User]
     me: User
     searchUser(searchword: String!): [User]
   }
@@ -66,6 +67,9 @@ export const userResolver = {
     },
     findUser: async (_root: undefined, args: { username: string; }) => {
       return await User.findOne({username: args.username});
+    },
+    findUsers: async (_root: undefined, args: { userIds: string[]; }) => {
+      return await User.find({ _id: { $in: args.userIds} });
     },
     me: async (_root: undefined, _args: undefined, context: { currentUser: CurrentUser; }) => {
       if(!context.currentUser){

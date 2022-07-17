@@ -1,7 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-
-
 import { secretClient } from '../libs/s3Client';
 
 const secretName = "sma-secrets";
@@ -10,6 +8,7 @@ let secret: string;
 export interface Secrets {
   TEST_MONGODB_URI: string;    
   MONGODB_URI: string;
+	DEV_MONGODB_URI: string;
   SECRET: string;
 }
 
