@@ -17,14 +17,12 @@ const config = async () => {
         case 'test':
           MONGODB_URI = secrets.TEST_MONGODB_URI;
           break;
-        case 'production':
-          MONGODB_URI = secrets.MONGODB_URI;
-          break;
         case 'development':
           MONGODB_URI = secrets.DEV_MONGODB_URI;
           break;
         default:
-          throw new Error('Invalid NODE_ENV');
+          MONGODB_URI = secrets.MONGODB_URI;
+          break;
       }
       const SECRET = secrets.SECRET;
       resolve({MONGODB_URI, PORT, SECRET});
