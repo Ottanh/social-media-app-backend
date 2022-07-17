@@ -1,4 +1,4 @@
-import { ApolloServer, UserInputError } from 'apollo-server';
+import { ApolloServer, gql, UserInputError } from 'apollo-server';
 import mongoose from 'mongoose';
 import { postResolver, userTypeDef } from './Post/post';
 import { postTypeDef, userResolver } from './User/user';
@@ -7,8 +7,14 @@ import User from './User/model';
 import jwt, { JsonWebTokenError } from 'jsonwebtoken';
 import { CurrentUser, UserToken } from './User/types';
 import config from './config';
-import { typeDefs, s3Resolvers } from './S3/resolvers';
+import { s3TypeDefs, s3Resolvers } from './S3/resolvers';
 
+export const typeDefs = gql`
+  type Query {
+    _empty: String
+  }
+`;
+export const resolvers = {};
 
 void (async() => {
   mongoose.connect((await config).MONGODB_URI)
@@ -20,8 +26,8 @@ void (async() => {
     });
 
   const server = new ApolloServer({
-    typeDefs: [userTypeDef, postTypeDef, typeDefs],
-    resolvers: merge(s3Resolvers, userResolver, postResolver),
+    typeDefs: [userTypeDef, postTypeDef, s3TypeDefs, typeDefs],
+    resolvers: merge(s3Resolvers, userResolver, postResolver, resolvers),
     context: async ({ req }): Promise<{currentUser: CurrentUser | null}> => {    
       const auth = req ? req.headers.authorization : null;    
       if (auth && auth.toLowerCase().startsWith('bearer ')) {

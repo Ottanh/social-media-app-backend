@@ -16,7 +16,7 @@ export const GET_ALL_USERS = gql`
 `;
 
 export const FIND_USER = gql`
-  query FindUser($username: String) {
+  query FindUser($username: String!) {
     findUser(username: $username) {
       id
       username

@@ -2,9 +2,8 @@ import { gql, AuthenticationError } from "apollo-server";
 import { CurrentUser } from "../User/types";
 import { getSignedPut, getSignedDelete } from "./s3_signed_url";
 
-export const typeDefs = gql`
+export const s3TypeDefs = gql`
   type Query {
-    _empty: String
      getPutUrl(fileName: String!): String
     getDeleteUrl(fileName: String!): String
    }
