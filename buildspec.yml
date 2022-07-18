@@ -17,4 +17,6 @@ phases:
      
 artifacts:
   files:
-    - sma/**/*
+    - appspec.yml
+    - build/*
+    - scripts/*
