@@ -1,6 +1,29 @@
-# social-media-app-backend
+# Back end for [social media app](https://github.com/Ottanh/social-media-app)
+Backend for a twitter like social media website.
 
-# Tech stack
+## Requirements
+* AWS S3 bucket called 'sma-bucket'
+* AWS Secrests Manager containing 'sma-secrets' with following keys:    
+  * MONGODB_URI
+  * DEV_MONGODB_URI
+  * TEST_MONGODB_URI
+  * JWT_SECRET
+  
+## Run locally
+`npm install`  
+`npm run dev`   
+
+## Production build:  
+`npm run tsc`  
+`npm start`  
+
+## Tests
+Integration tests made with Jest and ApolloServer's executeOperation()    
+
+`npm run test-user`   
+`npm run test-post`   
+
+## Tech stack
 <a href="https://www.typescriptlang.org/" title="Typescript"><img src="https://github.com/get-icon/geticon/raw/master/icons/typescript-icon.svg" alt="Typescript" width="21px" height="21px"></a>
 <a href="https://nodejs.org/" title="Node.js"><img src="https://github.com/get-icon/geticon/raw/master/icons/nodejs-icon.svg" alt="Node.js" width="21px" height="21px"></a>
 <a href="https://www.mongodb.org/" title="MongoDB"><img src="https://github.com/get-icon/geticon/raw/master/icons/mongodb-icon.svg" alt="MongoDB" width="21px" height="21px"></a>
