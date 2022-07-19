@@ -6,10 +6,10 @@ const secretName = "sma-secrets";
 let secret: string;
 
 export interface Secrets {
+  DEV_MONGODB_URI: string;
   TEST_MONGODB_URI: string;    
   MONGODB_URI: string;
-	DEV_MONGODB_URI: string;
-  SECRET: string;
+  JWT_SECRET: string;
 }
 
 const getSecrets = () => {
@@ -17,24 +17,24 @@ const getSecrets = () => {
     secretClient.getSecretValue({SecretId: secretName}, function(err, data) {
       if (err) {
         if (err.code === 'DecryptionFailureException'){
-          console.log(err);
           // Secrets Manager can't decrypt the protected secret text using the provided KMS key.
+          console.log(err);
         }
 				else if (err.code === 'InternalServiceErrorException'){
+          // An error occurred on the server side.
 					console.log(err);
-					// An error occurred on the server side.
 				}
 				else if (err.code === 'InvalidParameterException'){
+          // You provided an invalid value for a parameter.
 					console.log(err);
-					// You provided an invalid value for a parameter.
 				}
 				else if (err.code === 'InvalidRequestException'){
+          // You provided a parameter value that is not valid for the current state of the resource.
 					console.log(err);
-					// You provided a parameter value that is not valid for the current state of the resource.
 				}
 				else if (err.code === 'ResourceNotFoundException'){
+          // We can't find the resource that you asked for.
 					console.log(err);
-					// We can't find the resource that you asked for.
 				}
       }
       else {

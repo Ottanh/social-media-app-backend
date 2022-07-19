@@ -32,7 +32,7 @@ void (async() => {
       const auth = req ? req.headers.authorization : null;    
       if (auth && auth.toLowerCase().startsWith('bearer ')) {
         try {
-          const decodedToken = jwt.verify(auth.substring(7), (await config).SECRET) as UserToken; 
+          const decodedToken = jwt.verify(auth.substring(7), (await config).JWT_SECRET) as UserToken; 
           const currentUser = await User.findById(decodedToken.id, { name: 1, username: 1});   
           return { currentUser };
         } catch (error){

@@ -4,7 +4,7 @@ import getSecrets from './secrets';
 interface Config {
   MONGODB_URI: string;
   PORT: string;
-  SECRET: string
+  JWT_SECRET: string
 }
 
 const config = async () => {
@@ -24,8 +24,8 @@ const config = async () => {
           MONGODB_URI = secrets.MONGODB_URI;
           break;
       }
-      const SECRET = secrets.SECRET;
-      resolve({MONGODB_URI, PORT, SECRET});
+      const JWT_SECRET = secrets.JWT_SECRET;
+      resolve({MONGODB_URI, PORT, JWT_SECRET});
     })
     .catch(e => {
       console.log(e);
