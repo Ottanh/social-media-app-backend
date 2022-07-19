@@ -13,7 +13,7 @@ export const postTypeDef = gql`
     id: ID!
     username: String!
     name: String!
-    date: String!
+    date: Float!
     description: String
     image: String!
     likes: [ID]!

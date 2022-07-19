@@ -9,6 +9,7 @@ import { getSignedGet } from "../S3/s3_signed_url";
 
 
 export const userTypeDef = gql`
+
   type PostUser {
     id: ID!
     name: String!
@@ -17,7 +18,7 @@ export const userTypeDef = gql`
   type Post {
     id: ID!
     user: PostUser!
-    date: String!
+    date: Float!
     content: String!
     image: String
     likes: Int!
